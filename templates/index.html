@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>证券分析智能体</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧筛选区域 -->
+        <div class="left-panel">
+            <div class="security-type">
+                <span class="label">证券类型：</span>
+                <label><input type="radio" name="security_type" value="股票" checked> 股票</label>
+                <label><input type="radio" name="security_type" value="指数"> 指数</label>
+                <label><input type="radio" name="security_type" value="ETF"> ETF</label>
+                <label><input type="radio" name="security_type" value="LOF"> LOF</label>
+                <label><input type="radio" name="security_type" value="国债"> 国债</label>
+                <label><input type="radio" name="security_type" value="企债"> 企债</label>
+                <label><input type="radio" name="security_type" value="可转债"> 可转债</label>
+            </div>
+
+            <!-- 按钮区域和代码指令输入 -->
+            <div class="button-group">
+                <button id="btn-filter">执行证券筛选</button>
+                <button id="btn-update-db">更新数据库数据</button>
+                <button id="btn-export">导出证券筛选表</button>
+            </div>
+            <div class="code-input-area">
+                <label for="code-input">DSL 选股指令 <span class="dsl-hint">（Ctrl+Enter 执行；点"语法帮助"查看词库与示例）</span></label>
+                <textarea id="code-input" rows="4" placeholder="示例：行业 = &#34;银行&#34; AND 市盈率 &lt; 8 AND MA(收盘价, 5) &gt; MA(收盘价, 20)"></textarea>
+                <div class="dsl-toolbar">
+                    <button id="btn-dsl-run">执行指令</button>
+                    <button id="btn-dsl-help" type="button">语法帮助</button>
+                </div>
+                <div id="dsl-error" class="dsl-error" style="display:none;"></div>
+                <div id="dsl-sql-panel" class="dsl-sql-panel" style="display:none;">
+                    <h4>翻译生成的 SQL（<span id="dsl-dialect-name">DuckDB</span> 方言）</h4>
+                    <pre id="dsl-sql"></pre>
+                </div>
+                <div id="dsl-help-panel" class="dsl-help-panel" style="display:none;"></div>
+            </div>
+
+            <!-- 股票条件区域 -->
+            <div id="stock-conditions" class="conditions active">
+                <div class="condition-group">
+                    <h4>交易所板块</h4>
+                    <select multiple size="6" id="stock_exchange">
+                        <option value="全部" selected>全部</option>
+                        <option value="上证A股">上证A股</option>
+                        <option value="深证A股">深证A股</option>
+                        <option value="北证A股">北证A股</option>
+                        <option value="上证主板">上证主板</option>
+                        <option value="深证主板">深证主板</option>
+                        <option value="创业板">创业板</option>
+                        <option value="科创板">科创板</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>概念</h4>
+                    <select multiple size="6" id="stock_concept">
+                        <!-- 动态加载 -->
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>行业</h4>
+                    <select multiple size="6" id="stock_industry">
+                        <!-- 动态加载 -->
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>地域</h4>
+                    <select multiple size="6" id="stock_region">
+                        <!-- 动态加载 -->
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>风险警示</h4>
+                    <select multiple size="4" id="stock_risk">
+                        <option value="全部" selected>全部</option>
+                        <option value="非风险警示股">非风险警示股</option>
+                        <option value="ST股">ST股</option>
+                        <option value="*ST股">*ST股</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="stock_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- 指数条件区域 -->
+            <div id="index-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>指数系列</h4>
+                    <select multiple size="4" id="index_series">
+                        <option value="全部" selected>全部</option>
+                        <option value="上证系列指数">上证系列指数</option>
+                        <option value="深证系列指数">深证系列指数</option>
+                        <option value="中证系列指数">中证系列指数</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="index_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- ETF条件区域 -->
+            <div id="etf-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="etf_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- LOF条件区域 -->
+            <div id="lof-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="lof_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- 国债条件区域 -->
+            <div id="national-debt-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>交易所</h4>
+                    <select multiple size="3" id="debt_exchange">
+                        <option value="全部" selected>全部</option>
+                        <option value="沪国债">沪国债</option>
+                        <option value="深国债">深国债</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="debt_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- 企债条件区域 -->
+            <div id="corporate-bond-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>交易所</h4>
+                    <select multiple size="4" id="corporate_exchange">
+                        <option value="全部" selected>全部</option>
+                        <option value="沪企债">沪企债</option>
+                        <option value="深企债">深企债</option>
+                        <option value="北企债">北企债</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="corporate_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- 可转债条件区域 -->
+            <div id="convertible-bond-conditions" class="conditions">
+                <div class="condition-group">
+                    <h4>交易所</h4>
+                    <select multiple size="3" id="convertible_exchange">
+                        <option value="全部" selected>全部</option>
+                        <option value="沪转债">沪转债</option>
+                        <option value="深转债">深转债</option>
+                    </select>
+                </div>
+                <div class="condition-group">
+                    <h4>名称（关键字）</h4>
+                    <input type="text" id="convertible_name" placeholder="多个关键字用空格/逗号分隔">
+                </div>
+            </div>
+
+            <!-- 指标筛选 -->
+            <div class="metric-filters">
+                <h3>指标筛选</h3>
+                <div class="metric-row">
+                    <span>最近收盘价</span>
+                    <input type="text" id="price_min" placeholder="下限" class="metric-input">
+                    <input type="text" id="price_max" placeholder="上限" class="metric-input">
+                </div>
+                <div class="metric-row">
+                    <span>动态市盈率</span>
+                    <input type="text" id="pe_min" placeholder="下限" class="metric-input">
+                    <input type="text" id="pe_max" placeholder="上限" class="metric-input">
+                </div>
+                <div class="metric-row">
+                    <span>市净率</span>
+                    <input type="text" id="pb_min" placeholder="下限" class="metric-input">
+                    <input type="text" id="pb_max" placeholder="上限" class="metric-input">
+                </div>
+                <div class="metric-row">
+                    <span>总市值（亿元）</span>
+                    <input type="text" id="marketcap_min" placeholder="下限" class="metric-input">
+                    <input type="text" id="marketcap_max" placeholder="上限" class="metric-input">
+                </div>
+                <div class="metric-row">
+                    <span>流通市值（亿元）</span>
+                    <input type="text" id="circ_mv_min" placeholder="下限" class="metric-input">
+                    <input type="text" id="circ_mv_max" placeholder="上限" class="metric-input">
+                </div>
+            </div>
+
+            <!-- 执行过程信息输出框 -->
+            <div class="process-info">
+                <h4>执行过程信息</h4>
+                <div id="process-logs"></div>
+            </div>
+        </div>
+
+        <!-- 右侧结果区域 -->
+        <div class="right-panel">
+            <h3>证券筛选结果</h3>
+            <div class="result-info" id="result-info">共 0 个证券</div>
+            <div class="table-container">
+                <table id="result-table">
+                    <thead>
+                        <tr id="table-header"></tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据库更新进度弹窗 -->
+    <div id="update-modal" style="display:none;">
+        <div class="update-overlay">
+            <div class="update-modal-content">
+                <div class="spinner"></div>
+                <p>数据库更新中，请耐心等待，不要关闭网页，不要进行其他操作......</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

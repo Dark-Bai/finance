@@ -196,27 +196,34 @@ python update_db.py
 
 ```
 dsl-stock-screener/
-├── app.py                       # Flask 后端 (~2900 行)
-├── dsl_engine.py                # DSL→SQL 编译器 (~770 行，核心交付物)
-├── update_db.py                 # 数据导入管道（~795 行，Tushare→DuckDB）
-├── db.py                        # DuckDB / Doris 双后端连接
-├── migrate_to_doris.py          # DuckDB→Doris 迁移脚本
+├── app.py                       # Flask 后端 (~2863 行)
+├── dsl_engine.py                # DSL→SQL 编译器 (~766 行，核心交付物)
+├── update_db.py                 # 数据导入管道（~812 行，Tushare→DuckDB）
+├── db.py                        # DuckDB / Doris 双后端连接（~95 行）
+├── migrate_to_doris.py          # DuckDB→Doris 迁移脚本（~220 行）
 ├── doris_schema.sql             # Doris 建表 DDL（5 张英文表，重建时参考）
 ├── DSL语法帮助.md                # DSL 完整语法文档
-├── 系统架构说明文档.md            # 零基础架构说明
-├── 系统运行原理.md                # 技术工程师手册（数据流/API清单/运维）
-├── 系统架构详解.md                # 融合版架构文档（14章，面向评委/队友）
-├── 排查方案.md                   # 静态审查 + 对拍验证记录
-├── instance/stock_data.duckdb   # 本地数据库 (~1.5 GB, gitignore)
+├── 代码变更日志.md                # 代码变更按时间线归档
+├── 系统架构详解.md                # 融合版架构文档（面向评委/队友）
+├── Duckdb数据库结构.xlsx         # 数据库表结构配置
+├── instance/stock_data.duckdb   # 本地数据库 (~1.5 GB, gitignored)
 ├── templates/                   # 5 个 HTML 页面
 │   ├── index.html               # 证券筛选主页 + DSL 面板
 │   ├── detail.html              # K线图 + 技术指标
 │   ├── fundamental.html         # 基本面分析
-│   └── ai_chat.html             # AI 对话
+│   ├── ai_chat.html             # AI 对话
+│   └── toolbox.html             # 工具箱（占位）
 ├── static/
-│   ├── css/style.css            # DSL 样式
-│   └── js/script.js             # DSL 前端 + K线绘制
-└── temp_file__/                  # 临时文件（迁移 parquet、K线缓存等）
+│   ├── css/style.css            # 主样式
+│   ├── css/detail.css           # K线图样式
+│   ├── css/fundamental.css      # 基本面样式
+│   ├── css/ai_chat.css          # AI 对话样式
+│   ├── js/script.js             # 主脚本 + DSL 前端
+│   ├── js/detail.js             # Canvas K线绘制
+│   ├── js/fundamental.js        # 基本面交互
+│   └── js/ai_chat.js            # AI 对话
+├── venv/                        # Python 虚拟环境 (gitignored)
+└── temp_file__/                  # 临时文件（gitignored）
 ```
 
 ---

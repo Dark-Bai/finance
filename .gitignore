@@ -12,7 +12,8 @@ env/
 *.db
 *.sqlite
 *.sqlite3
-instance/
+instance/*
+!instance/.gitkeep
 
 # 密钥/敏感
 AI密钥.txt

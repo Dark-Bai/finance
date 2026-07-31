@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 数据库
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# 密钥/敏感
+AI密钥.txt
+*密钥*.txt
+.env
+*.key
+
+# 临时文件
+temp_file__/
+*.tmp
+*.log
+
+# 编辑器/系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -145,14 +145,6 @@
   .dsl-help ul{margin:6px 0 0 18px}
   .dsl-help li{margin:3px 0;line-height:1.6}
   .dsl-help code{font-family:'Consolas',monospace;background:var(--red-l);color:var(--red-d);padding:0 4px;border-radius:3px;font-size:12px}
-  .dsl-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-  .dsl-tag{background:#fff;border:1px solid var(--border);border-radius:10px;padding:2px 9px;font-size:12px;color:var(--fg)}
-  .dsl-tag em{font-style:normal;color:var(--muted);margin-left:4px}
-  .dsl-examples{list-style:none;margin:6px 0 0;padding:0}
-  .dsl-examples .dsl-example{cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;background:#fff;transition:.15s}
-  .dsl-examples .dsl-example:hover{border-color:var(--red);background:var(--red-l)}
-  .dsl-examples .dsl-example b{color:var(--red-d);display:block;font-size:12px;margin-bottom:2px}
-  .dsl-help-notes{margin-top:10px;color:var(--muted);font-size:12px;border-top:1px dashed var(--border);padding-top:8px}
 
   .loading{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle}
   @keyframes sp{to{transform:rotate(360deg)}}
@@ -168,12 +160,31 @@
   .dsl-section.collapsed .dsl-section-header .collapse-arrow{transform:rotate(-90deg)}
   .dsl-section.collapsed .dsl-section-header{border-bottom-color:transparent}
   .dsl-section.collapsed .dsl-section-body{display:none}
-  .dsl-section-body{padding:12px 16px}
-  .dsl-section-body textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--fg);font-size:13px;font-family:'Consolas',monospace;padding:10px;resize:vertical;min-height:70px;outline:none}
+  .dsl-section-body{padding:12px 16px;display:flex;gap:12px}
+  .dsl-section-body .dsl-left{flex:1;min-width:0;display:flex;flex-direction:column}
+  .dsl-section-body .dsl-right{flex:0 0 320px;background:#fafbfc;border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;max-height:320px}
+  .dsl-section-body .dsl-right.hidden{display:none}
+  .dsl-section-body .dsl-right-header{padding:7px 10px;font-size:11px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);background:#fcfcfd;display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .dsl-section-body .dsl-right-body{flex:1;overflow-y:auto;padding:6px 10px;font-size:11px}
+  .dsl-section-body .dsl-right-body::-webkit-scrollbar{width:4px}
+  .dsl-section-body .dsl-right-body::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px}
+  .dsl-section-body .dsl-right-body .help-section{margin-bottom:8px}
+  .dsl-section-body .dsl-right-body .help-section summary{font-weight:600;color:var(--fg);cursor:pointer;padding:2px 0;font-size:11px}
+  .dsl-section-body .dsl-right-body .help-section .help-tags{display:flex;flex-wrap:wrap;gap:3px;padding:3px 0}
+  .dsl-section-body .dsl-right-body .help-section .help-tag{display:inline-block;background:#fff;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted);cursor:pointer;transition:.12s}
+  .dsl-section-body .dsl-right-body .help-section .help-tag:hover{border-color:var(--red);color:var(--red-d);background:var(--red-l)}
+  .dsl-section-body .dsl-right-body .help-section .help-tag.active{border-color:var(--red);color:var(--red-d);background:var(--red-l);font-weight:600}
+  .dsl-section-body .dsl-right-body .help-section .help-example{display:block;background:#fff;border:1px solid var(--border);border-radius:4px;padding:5px 8px;margin:3px 0;font-size:10px;font-family:'Consolas',monospace;color:var(--fg);cursor:pointer;transition:.12s}
+  .dsl-section-body .dsl-right-body .help-section .help-example:hover{border-color:var(--red);background:var(--red-l)}
+  .dsl-section-body .dsl-right-body .help-section .help-example b{color:var(--red-d);display:block;margin-bottom:2px;font-size:10px}
+  .dsl-section-body .dsl-right-body .help-section .help-example code{color:var(--muted)}
+  .dsl-section-body .dsl-right-body .help-empty{padding:20px;text-align:center;color:var(--dim);font-size:12px}
+  .dsl-section-body textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--fg);font-size:13px;font-family:'Consolas',monospace;padding:8px;resize:vertical;min-height:60px;outline:none;flex-shrink:0}
   .dsl-section-body textarea:focus{border-color:var(--red)}
-  .dsl-section-body .dsl-actions{display:flex;gap:8px;margin-top:10px}
-  .dsl-section-body .dsl-error,.dsl-section-body .dsl-sql,.dsl-section-body .dsl-help{margin-top:10px}
-  .dsl-section-body .dsl-help{max-height:400px;overflow-y:auto}
+  .dsl-section-body .dsl-actions{display:flex;gap:6px;margin-top:6px;flex-shrink:0}
+  .dsl-section-body .dsl-error,.dsl-section-body .dsl-sql{margin-top:6px;flex-shrink:0}
+  .dsl-section-body .dsl-error{font-size:12px}
+  .dsl-section-body .dsl-sql{font-size:11px;color:var(--muted);background:#fafbfc;border-radius:4px;padding:4px 8px;white-space:pre-wrap;word-break:break-all}
 
   /* 整合子窗口 */
   .main-window{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
@@ -2671,7 +2682,7 @@
 
 <main>
 
-  <!-- DSL 区域（顶部显眼位置，始终可见） -->
+  <!-- DSL 区域（顶部，可折叠，双栏布局） -->
   <div class="dsl-section" id="dslSection">
     <div class="dsl-section-header" id="dslSectionHeader">
       <span class="badge b3">DSL</span>
@@ -2680,14 +2691,24 @@
       <span class="collapse-arrow">▾</span>
     </div>
     <div class="dsl-section-body" id="dslSectionBody">
-      <textarea id="dslInput" placeholder="例如：行业 = &quot;银行&quot; AND 市盈率 &lt; 8 AND 市净率 &lt; 1"></textarea>
-      <div class="dsl-actions">
-        <button class="btn primary" id="btnDslRun">执行指令</button>
-        <button class="btn ghost" id="btnDslHelp">语法帮助</button>
+      <div class="dsl-left">
+        <textarea id="dslInput" placeholder="例如：行业 = &quot;银行&quot; AND 市盈率 &lt; 8 AND 市净率 &lt; 1" rows="2"></textarea>
+        <div class="dsl-actions">
+          <button class="btn primary" id="btnDslRun" style="padding:4px 12px;font-size:12px">执行指令</button>
+          <button class="btn ghost" id="btnDslHelp" style="padding:4px 12px;font-size:12px">语法帮助</button>
+        </div>
+        <div class="dsl-error" id="dslError" style="display:none"></div>
+        <div class="dsl-sql" id="dslSql" style="display:none"></div>
       </div>
-      <div class="dsl-error" id="dslError" style="display:none"></div>
-      <div class="dsl-sql" id="dslSql" style="display:none"></div>
-      <div class="dsl-help" id="dslHelpPanel" style="display:none"></div>
+      <div class="dsl-right" id="dslHelpPanel">
+        <div class="dsl-right-header">
+          <span>语法帮助</span>
+          <span style="font-weight:400;color:var(--dim);font-size:10px">点击可填入输入框</span>
+        </div>
+        <div class="dsl-right-body" id="dslHelpBody">
+          <div class="help-empty">正在加载语法帮助…</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2831,6 +2852,8 @@ $('#logHeader').addEventListener('click',()=>{
 
 /* ============ 初始化 ============ */
 async function init(){
+  // DSL 语法帮助自动加载
+  loadDslHelp();
   // 交易所板块（固定）
   renderOpts('pane-exchange',EXCHANGE_OPTIONS,'exchange');
   // 概念、地域（API）
@@ -3172,28 +3195,91 @@ $('#btnDslRun').addEventListener('click',async()=>{
     btn.disabled=false;btn.textContent=orig;
   }
 });
-$('#btnDslHelp').addEventListener('click',async()=>{
+$('#btnDslHelp').addEventListener('click',()=>{
   const panel=$('#dslHelpPanel');
-  if(panel.style.display==='block'){panel.style.display='none';return;}
-  if(panel.dataset.loaded==='1'){panel.style.display='block';return;}
-  try{
-    const d=await api('/api/dsl_help',{});
-    panel.innerHTML=renderDslHelp(d);
-    panel.dataset.loaded='1';
-    panel.style.display='block';
-    panel.querySelectorAll('.dsl-example').forEach(el=>{
-      el.addEventListener('click',()=>{
-        $('#dslInput').value=el.dataset.dsl;
-        hideDslError();
-        $('#dslInput').focus();
-      });
-    });
-    log('DSL 语法帮助已加载。');
-  }catch(e){
-    log('获取帮助失败: '+e,'err');
-    showDslError('加载语法帮助失败: '+e);
+  panel.classList.toggle('hidden');
+  if(!panel.classList.contains('hidden') && !panel.dataset.loaded){
+    loadDslHelp();
   }
 });
+// 动态语法高亮：根据输入内容高亮匹配的帮助项
+$('#dslInput').addEventListener('input',function(){
+  highlightDslHelp(this.value);
+});
+
+let dslHelpData = null;
+
+async function loadDslHelp(){
+  const body=$('#dslHelpBody');
+  try{
+    const d=await api('/api/dsl_help',{});
+    dslHelpData=d;
+    body.innerHTML=renderDslHelp(d);
+    body.querySelectorAll('.help-tag, .help-example').forEach(el=>{
+      el.addEventListener('click',()=>{
+        const dsl=el.dataset.dsl||el.textContent.trim();
+        if(dsl){
+          const inp=$('#dslInput');
+          inp.value=dsl;
+          hideDslError();
+          inp.focus();
+          highlightDslHelp(dsl);
+        }
+      });
+    });
+    $('#dslHelpPanel').dataset.loaded='1';
+    log('DSL 语法帮助已加载。');
+  }catch(e){
+    body.innerHTML='<div class="help-empty">加载语法帮助失败</div>';
+    log('获取帮助失败: '+e,'err');
+  }
+}
+
+let highlightTimer=null;
+function highlightDslHelp(input){
+  clearTimeout(highlightTimer);
+  highlightTimer=setTimeout(()=>{
+    if(!dslHelpData) return;
+    const kw=input.toLowerCase();
+    if(!kw.trim()){$('#dslHelpBody').querySelectorAll('.help-tag').forEach(t=>t.classList.remove('active'));return;}
+    // 提取关键词 (中文/英文单词)
+    const words=kw.match(/[\u4e00-\u9fa5_a-zA-Z0-9]+/g)||[];
+    const tags=$('#dslHelpBody').querySelectorAll('.help-tag');
+    tags.forEach(t=>{
+      const txt=t.textContent.toLowerCase();
+      t.classList.toggle('active',words.some(w=>txt.includes(w)));
+    });
+  },200);
+}
+
+function renderDslHelp(h){
+  let html='';
+  // 数值字段
+  html+='<details class="help-section" open><summary>数值字段</summary><div class="help-tags">';
+  h.numeric_fields.forEach(f=>{html+='<span class="help-tag" data-dsl="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+(f.unit?' <em style="color:var(--dim)">'+escapeHtml(f.unit)+'</em>':'')+'</span>';});
+  html+='</div></details>';
+  // 文本字段
+  html+='<details class="help-section"><summary>文本字段</summary><div class="help-tags">';
+  h.string_fields.forEach(f=>{html+='<span class="help-tag" data-dsl="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+'</span>';});
+  html+='</div></details>';
+  // 布尔字段
+  html+='<details class="help-section"><summary>布尔字段</summary><div class="help-tags">';
+  h.bool_fields.forEach(f=>{html+='<span class="help-tag" data-dsl="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+'</span>';});
+  html+='</div></details>';
+  // 历史函数
+  html+='<details class="help-section" open><summary>历史函数</summary>';
+  h.functions.forEach(f=>{html+='<span class="help-example" data-dsl="'+escapeHtml(f.example)+'"><b>'+escapeHtml(f.sig)+'</b>'+escapeHtml(f.desc)+'<code>'+escapeHtml(f.example)+'</code></span>';});
+  html+='</details>';
+  // 运算符
+  html+='<details class="help-section"><summary>运算符</summary><div class="help-tags">';
+  h.operators.forEach(f=>{html+='<span class="help-tag" data-dsl="'+escapeHtml(f.sig)+'">'+escapeHtml(f.sig)+'</span>';});
+  html+='</div></details>';
+  // 示例
+  html+='<details class="help-section" open><summary>示例</summary>';
+  h.examples.forEach(f=>{html+='<span class="help-example" data-dsl="'+escapeHtml(f.dsl)+'"><b>'+escapeHtml(f.title)+'</b><code>'+escapeHtml(f.dsl)+'</code></span>';});
+  html+='</details>';
+  return html;
+}
 function showDslError(msg,pos){
   const box=$('#dslError');
   let html='<div>❌ '+escapeHtml(msg)+'</div>';
@@ -3213,30 +3299,6 @@ function showDslError(msg,pos){
 }
 function hideDslError(){const box=$('#dslError');if(box)box.style.display='none';}
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function renderDslHelp(h){
-  let html='<h4>DSL 语法帮助</h4>';
-  html+='<p class="intro">'+escapeHtml(h.intro)+'</p>';
-  html+='<details open><summary>数值字段（括号内为单位）</summary><div class="dsl-tags">';
-  h.numeric_fields.forEach(f=>{html+='<span class="dsl-tag">'+escapeHtml(f.name)+(f.unit?'<em>'+escapeHtml(f.unit)+'</em>':'')+'</span>';});
-  html+='</div></details>';
-  html+='<details><summary>文本字段</summary><ul>';
-  h.string_fields.forEach(f=>{html+='<li><b>'+escapeHtml(f.name)+'</b>：'+escapeHtml(f.note)+'</li>';});
-  html+='</ul></details>';
-  html+='<details><summary>布尔字段</summary><ul>';
-  h.bool_fields.forEach(f=>{html+='<li><b>'+escapeHtml(f.name)+'</b>：'+escapeHtml(f.note)+'</li>';});
-  html+='</ul></details>';
-  html+='<details open><summary>历史函数（基于日K线计算）</summary><ul>';
-  h.functions.forEach(f=>{html+='<li><b>'+escapeHtml(f.sig)+'</b>：'+escapeHtml(f.desc)+'<br><code>'+escapeHtml(f.example)+'</code></li>';});
-  html+='</ul></details>';
-  html+='<details><summary>运算符</summary><ul>';
-  h.operators.forEach(f=>{html+='<li><b>'+escapeHtml(f.sig)+'</b>：'+escapeHtml(f.desc)+'</li>';});
-  html+='</ul></details>';
-  html+='<details open><summary>示例（点击填入输入框）</summary><ul class="dsl-examples">';
-  h.examples.forEach(f=>{html+='<li class="dsl-example" data-dsl="'+escapeHtml(f.dsl)+'"><b>'+escapeHtml(f.title)+'</b><code>'+escapeHtml(f.dsl)+'</code></li>';});
-  html+='</ul></details>';
-  html+='<p class="dsl-help-notes">'+h.notes.map(n=>escapeHtml(n)).join('<br>')+'</p>';
-  return html;
-}
 
 /* ============ 更新数据库 ============ */
 $('#btnUpdateDb').addEventListener('click',async()=>{

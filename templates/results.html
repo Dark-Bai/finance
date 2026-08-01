@@ -337,6 +337,18 @@ function parseData(){
     allVolume.push(parseFloat(parts[5]));
     allAmount.push(parts[6]?parseFloat(parts[6]):0);
   });
+  // 限制数据量为最近365条，避免渲染性能问题
+  if(allDates.length>365){
+    const start=allDates.length-365;
+    allDates=allDates.slice(start);
+    allOpen=allOpen.slice(start);
+    allClose=allClose.slice(start);
+    allHigh=allHigh.slice(start);
+    allLow=allLow.slice(start);
+    allVolume=allVolume.slice(start);
+    allAmount=allAmount.slice(start);
+    currentKlineData=currentKlineData.slice(start);
+  }
   totalDays=allDates.length;
   leftSliderX=30; rightSliderX=canvasK.width-60;
   updateVisibleRange();
@@ -359,7 +371,17 @@ function updateVisibleRange(){
 }
 
 /* ============ 指标计算 ============ */
-function calcMA(prices,period){const r=[];for(let i=0;i<prices.length;i++){if(i<period-1){r.push(null);}else{let s=0;for(let j=i-period+1;j<=i;j++)s+=prices[j];r.push(s/period);}}return r;}
+function calcMA(prices,period){
+  const r=[]; let sum=0;
+  for(let i=0;i<prices.length;i++){
+    sum+=prices[i];
+    if(i>=period-1){
+      r.push(sum/period);
+      sum-=prices[i-period+1];
+    }else{r.push(null);}
+  }
+  return r;
+}
 function calcRSI(prices,period){
   if(prices.length<=period) return new Array(prices.length).fill(null);
   const rsi=new Array(period).fill(null);

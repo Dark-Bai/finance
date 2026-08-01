@@ -158,6 +158,51 @@
   @keyframes sp{to{transform:rotate(360deg)}}
   .spin{display:inline-block;margin-left:6px}
   @media(max-width:900px){.cascade{flex-direction:column}.col{max-height:240px}.arrow{transform:rotate(90deg);padding:2px 0}.row2{flex-direction:column}}
+
+  /* ============ 合并窗口布局 ============ */
+  .dsl-section{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
+  .dsl-section-header{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--red-l)}
+  .dsl-section-header h3{font-size:13px;font-weight:600;color:var(--red-d)}
+  .dsl-section-header .hint{font-size:11px;color:var(--muted);margin-left:auto}
+  .dsl-section-body{padding:12px 16px}
+  .dsl-section-body textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--fg);font-size:13px;font-family:'Consolas',monospace;padding:10px;resize:vertical;min-height:70px;outline:none}
+  .dsl-section-body textarea:focus{border-color:var(--red)}
+  .dsl-section-body .dsl-actions{display:flex;gap:8px;margin-top:10px}
+  .dsl-section-body .dsl-error,.dsl-section-body .dsl-sql,.dsl-section-body .dsl-help{margin-top:10px}
+  .dsl-section-body .dsl-help{max-height:400px;overflow-y:auto}
+
+  /* 整合子窗口 */
+  .main-window{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
+  .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:#fcfcfd}
+  .sub-tab{flex:1;padding:10px 16px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;background:transparent;transition:.15s}
+  .sub-tab:hover{color:var(--fg);background:var(--red-l)}
+  .sub-tab.on{color:var(--red-d);border-bottom-color:var(--red);background:#fff}
+  .sub-content{position:relative}
+  .sub-pane{display:none;padding:14px 16px;max-height:480px;overflow-y:auto}
+  .sub-pane.on{display:block}
+  .sub-pane::-webkit-scrollbar{width:6px}
+  .sub-pane::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+  .sub-pane .crumb{margin-bottom:10px}
+  .sub-pane .cascade{margin-bottom:0}
+  .sub-pane .tags{margin-top:10px;margin-bottom:0}
+  .sub-pane .metric-grid{margin:0}
+  .sub-pane .result-bar{margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .sub-pane .result-bar .info{color:var(--muted);font-size:12px}
+  .sub-pane .tbl-wrap{max-height:360px;overflow-y:auto}
+  .sub-pane .tbl-wrap::-webkit-scrollbar{width:6px}
+  .sub-pane .tbl-wrap::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+
+  /* 可折叠日志 */
+  .log-section{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
+  .log-header{padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;background:#fcfcfd;border-bottom:1px solid var(--border);user-select:none}
+  .log-header:hover{color:var(--fg)}
+  .log-header .log-arrow{font-size:11px;transition:transform .2s}
+  .log-header.collapsed .log-arrow{transform:rotate(-90deg)}
+  .log-body{transition:max-height .25s ease;overflow:hidden}
+  .log-body.collapsed{max-height:0 !important}
+  .log-body .log-box{border:none;border-radius:0;max-height:140px;margin:0;padding:10px 14px;background:#fafbfc}
+  .log-body .log-box::-webkit-scrollbar{width:6px}
+  .log-body .log-box::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
 </style>
 <style>.trae-browser-inspect-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:999997;pointer-events:auto;background:rgba(0,0,0,0)}.trae-browser-inspect-highlight-box{position:absolute;top:0;left:0;z-index:999998;display:none}.trae-browser-inspect-highlight-tag{position:absolute;left:0px;top:0px;height:18px;padding:0 6px;box-sizing:border-box;border-radius:4px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:12px;font-weight:400;display:none;align-items:center;z-index:999999}.trae-browser-inspect-highlight-box-show{display:flex}.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show{display:flex !important}.trae-browser-inspect-select-button{position:absolute;top:0;left:0;background-color:var(--vscode-icube--bg-bg-base-secondary, "#222427");color:var(--vscode-icube--text-text-default-active, "#F5F9FE");font-size:11px;font-weight:500;border:1px solid var(--vscode-icube--border-neutral-l1, "#E0E2F217");border-radius:6px;padding:0 8px;height:32px;display:none;align-items:center;cursor:pointer;z-index:999999;gap:4px}.trae-browser-inspect-select-button svg,.trae-browser-inspect-select-button span{z-index:1}.trae-browser-inspect-select-highlight-box{background:rgba(0,0,0,0) !important}.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag{background-color:var(--vscode-icube--status-success-active, "#1E8B56")}.trae-browser-inspect-comment-card-container{position:fixed;top:0;left:0;z-index:9999999;pointer-events:auto}.trae-browser-inspect-comment-card-container .trae-browser-inspect-comment-card{display:flex;padding-top:0px !important;align-items:center;z-index:9999999 !important;background-color:var(--vscode-icube--bg-bg-menu)}*[contenteditable]{outline:none}.trae-browser-inspect-click-effect{position:fixed;width:40px;height:40px;margin-left:-20px;margin-top:-20px;border-radius:50%;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);pointer-events:none;animation:trae-browser-inspect-ripple 500ms ease-out forwards;z-index:999999}@keyframes trae-browser-inspect-ripple{0%{transform:scale(0.3);opacity:.8}100%{transform:scale(2);opacity:0}}.trae-browser-inspect-ref-box{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");pointer-events:none;z-index:999998;animation:trae-browser-inspect-fadeInOut 2s ease-in-out forwards}.trae-browser-inspect-ref-label{position:absolute;top:-14px;left:0;height:14px;padding:0 4px;box-sizing:border-box;border-radius:2px;background-color:var(--vscode-icube-colorSuccessHover, "#2FB287");color:var(--vscode-icube-colorSnow, "#fff");font-size:9px;font-weight:500;display:flex;align-items:center;white-space:nowrap;z-index:999999}@keyframes trae-browser-inspect-fadeInOut{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}.trae-browser-inspect-input-highlight{position:absolute;border:2px solid var(--vscode-icube-colorSuccessHover, "#2FB287");border-radius:4px;pointer-events:none;z-index:999998;box-shadow:0 0 8px var(--vscode-icube-colorSuccessHover, "#2FB287");animation:trae-browser-inspect-input-pulse 600ms ease-out forwards}@keyframes trae-browser-inspect-input-pulse{0%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}30%{opacity:1;box-shadow:0 0 12px var(--vscode-icube-colorSuccessHover, "#2FB287")}100%{opacity:0;box-shadow:0 0 0 var(--vscode-icube-colorSuccessHover, "#2FB287")}}.trae-browser-inspect-virtual-cursor{position:fixed;width:20px;height:20px;pointer-events:none;z-index:9999999;opacity:0;transition:opacity .2s ease}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-visible{opacity:1}.trae-browser-inspect-virtual-cursor.trae-browser-inspect-cursor-idle{animation:trae-browser-inspect-cursor-breathe 2s ease-in-out infinite}.trae-browser-inspect-virtual-cursor svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))}@keyframes trae-browser-inspect-cursor-breathe{0%,100%{opacity:.7}50%{opacity:1}}.trae-browser-inspect-scroll-indicator{position:fixed;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;background-color:rgba(0,0,0,.7);color:#fff;font-size:13px;font-weight:500;pointer-events:none;z-index:999999;animation:trae-browser-inspect-indicator-fade 800ms ease-out forwards;backdrop-filter:blur(4px)}.trae-browser-inspect-scroll-indicator svg{width:16px;height:16px;fill:#fff}.trae-browser-inspect-scroll-indicator.trae-scroll-up{top:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-down{bottom:12px;left:50%;transform:translateX(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-left{left:12px;top:50%;transform:translateY(-50%)}.trae-browser-inspect-scroll-indicator.trae-scroll-right{right:12px;top:50%;transform:translateY(-50%)}@keyframes trae-browser-inspect-indicator-fade{0%{opacity:0;transform:translateX(-50%) scale(0.9)}15%{opacity:1;transform:translateX(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-scroll-indicator.trae-scroll-left,.trae-browser-inspect-scroll-indicator.trae-scroll-right{animation-name:trae-browser-inspect-indicator-fade-y}@keyframes trae-browser-inspect-indicator-fade-y{0%{opacity:0;transform:translateY(-50%) scale(0.9)}15%{opacity:1;transform:translateY(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}.trae-browser-inspect-key-badge{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:8px;background-color:rgba(0,0,0,.8);color:#fff;font-size:18px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,monospace;pointer-events:none;z-index:999999;animation:trae-browser-inspect-key-pop 500ms ease-out forwards;backdrop-filter:blur(4px);border:1px solid hsla(0,0%,100%,.15);box-shadow:0 4px 12px rgba(0,0,0,.3);letter-spacing:1px}@keyframes trae-browser-inspect-key-pop{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(0.9)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}.trae-browser-inspect-step-badge{position:fixed;top:12px;left:12px;padding:6px 12px;border-radius:6px;background-color:var(--vscode-icube-colorSuccessHover, #2FB287);color:#fff;font-size:12px;font-weight:600;pointer-events:none;z-index:999999;animation:trae-browser-inspect-step-slide 600ms ease-out forwards;box-shadow:0 2px 8px rgba(47,178,135,.3);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trae-browser-inspect-step-badge.trae-step-old{opacity:.4;transform:translateY(0)}@keyframes trae-browser-inspect-step-slide{0%{opacity:0;transform:translateX(-20px)}20%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(0)}}.trae-browser-inspect-drag-trail{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999998}.trae-browser-inspect-drag-trail svg{width:100%;height:100%}.trae-browser-inspect-drag-trail .trae-drag-path{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;stroke-dasharray:8 4;opacity:.6;animation:trae-browser-inspect-dash 600ms linear forwards}.trae-browser-inspect-drag-trail .trae-drag-dot{fill:var(--vscode-icube-colorSuccessHover, #2FB287);filter:drop-shadow(0 0 4px rgba(47, 178, 135, 0.6))}.trae-browser-inspect-drag-trail .trae-drag-endpoint{fill:none;stroke:var(--vscode-icube-colorSuccessHover, #2FB287);stroke-width:2;opacity:.5}@keyframes trae-browser-inspect-dash{0%{stroke-dashoffset:200}100%{stroke-dashoffset:0}}.trae-browser-inspect-drag-trail.trae-drag-fade{animation:trae-browser-inspect-trail-fade 400ms ease-out forwards}@keyframes trae-browser-inspect-trail-fade{0%{opacity:1}100%{opacity:0}}</style><script type="module">(async () => {
   try {
@@ -2622,67 +2667,86 @@
 
 <main>
 
-  <!-- 窗口1: 级联选择 -->
-  <div class="win">
-    <div class="win-head">
-      <span class="badge b1">窗口1</span>
-      <h3>级联选择 · 板块 › 行业 › 个股</h3>
-      <span class="hint">依次选择，下层自动联动</span>
+  <!-- DSL 区域（顶部显眼位置，始终可见） -->
+  <div class="dsl-section" id="dslSection">
+    <div class="dsl-section-header">
+      <span class="badge b3">DSL</span>
+      <h3>选股指令</h3>
+      <span class="hint">输入选股条件，Ctrl+Enter 执行</span>
     </div>
-    <div class="win-body">
-      <div class="crumb">
-        <span class="on" id="c1">板块</span><i>›</i>
-        <span id="c2">行业</span><i>›</i>
-        <span id="c3">个股</span>
+    <div class="dsl-section-body">
+      <textarea id="dslInput" placeholder="例如：行业 = &quot;银行&quot; AND 市盈率 &lt; 8 AND 市净率 &lt; 1"></textarea>
+      <div class="dsl-actions">
+        <button class="btn primary" id="btnDslRun">执行指令</button>
+        <button class="btn ghost" id="btnDslHelp">语法帮助</button>
       </div>
-      <div class="cascade">
-        <!-- 列1: 板块 -->
-        <div class="col">
-          <div class="tabs">
-            <div class="tab on" data-tab="exchange">交易所板块</div>
-            <div class="tab" data-tab="concept">概念</div>
-            <div class="tab" data-tab="region">地域</div>
-          </div>
-          <div class="col-list" id="sectorList">
-            <div class="tab-pane on" id="pane-exchange"><div class="opt"><span class="box">✓</span><span>全部</span></div><div class="opt"><span class="box">✓</span><span>上证A股</span></div><div class="opt"><span class="box">✓</span><span>深证A股</span></div><div class="opt"><span class="box">✓</span><span>北证A股</span></div><div class="opt"><span class="box">✓</span><span>上证主板</span></div><div class="opt"><span class="box">✓</span><span>科创板</span></div><div class="opt"><span class="box">✓</span><span>深证主板</span></div><div class="opt"><span class="box">✓</span><span>创业板</span></div></div>
-            <div class="tab-pane" id="pane-concept"></div>
-            <div class="tab-pane" id="pane-region"></div>
-          </div>
-        </div>
-        <div class="arrow">›</div>
-        <!-- 列2: 行业 -->
-        <div class="col">
-          <div class="col-h">行业 <span class="cnt" id="indCnt">0 项</span></div>
-          <div class="col-list" id="industryList"><div class="empty-hint">行业列表加载中…</div></div>
-        </div>
-        <div class="arrow">›</div>
-        <!-- 列3: 个股预览 -->
-        <div class="col wide">
-          <div class="col-h">
-            个股预览 <span class="cnt" id="stkCnt">0 只</span>
-            <input type="search" id="stkSearch" placeholder="搜索名称/代码">
-          </div>
-          <div class="col-list" id="stockList">
-            <div class="empty-hint">选择板块与行业后<br>此处显示匹配个股</div>
-          </div>
-        </div>
-      </div>
-      <div class="tags" id="selTags">
-        <span class="lbl">已选板块:</span>
-        <span class="total" id="tagTotal"></span>
-      </div>
+      <div class="dsl-error" id="dslError" style="display:none"></div>
+      <div class="dsl-sql" id="dslSql" style="display:none"></div>
+      <div class="dsl-help" id="dslHelpPanel" style="display:none"></div>
     </div>
   </div>
 
-  <!-- 指标筛选 -->
-  <div class="row2">
-    <!-- 窗口3: 指标筛选 -->
-    <div class="win">
-      <div class="win-head">
-        <span class="badge b3">窗口3</span><h3>指标筛选</h3>
+  <!-- 整合窗口：子窗口区域（标签切换） -->
+  <div class="main-window">
+    <div class="sub-tabs">
+      <span class="sub-tab on" data-tab="sector">板块筛选</span>
+      <span class="sub-tab" data-tab="metric">指标筛选</span>
+      <span class="sub-tab" data-tab="result">选股结果</span>
+    </div>
+    <div class="sub-content">
+      <!-- 板块筛选 -->
+      <div class="sub-pane on" id="subPane-sector">
+        <div class="crumb">
+          <span class="on" id="c1">板块</span><i>›</i>
+          <span id="c2">行业</span><i>›</i>
+          <span id="c3">个股</span>
+        </div>
+        <div class="cascade">
+          <div class="col">
+            <div class="tabs">
+              <div class="tab on" data-tab="exchange">交易所板块</div>
+              <div class="tab" data-tab="concept">概念</div>
+              <div class="tab" data-tab="region">地域</div>
+            </div>
+            <div class="col-list" id="sectorList">
+              <div class="tab-pane on" id="pane-exchange"><div class="opt"><span class="box">✓</span><span>全部</span></div><div class="opt"><span class="box">✓</span><span>上证A股</span></div><div class="opt"><span class="box">✓</span><span>深证A股</span></div><div class="opt"><span class="box">✓</span><span>北证A股</span></div><div class="opt"><span class="box">✓</span><span>上证主板</span></div><div class="opt"><span class="box">✓</span><span>科创板</span></div><div class="opt"><span class="box">✓</span><span>深证主板</span></div><div class="opt"><span class="box">✓</span><span>创业板</span></div></div>
+              <div class="tab-pane" id="pane-concept"></div>
+              <div class="tab-pane" id="pane-region"></div>
+            </div>
+          </div>
+          <div class="arrow">›</div>
+          <div class="col">
+            <div class="col-h">行业 <span class="cnt" id="indCnt">0 项</span></div>
+            <div class="col-list" id="industryList"><div class="empty-hint">行业列表加载中…</div></div>
+          </div>
+          <div class="arrow">›</div>
+          <div class="col wide">
+            <div class="col-h">
+              个股预览 <span class="cnt" id="stkCnt">0 只</span>
+              <input type="search" id="stkSearch" placeholder="搜索名称/代码">
+            </div>
+            <div class="col-list" id="stockList">
+              <div class="empty-hint">选择板块与行业后<br>此处显示匹配个股</div>
+            </div>
+          </div>
+        </div>
+        <div class="tags" id="selTags">
+          <span class="lbl">已选板块:</span>
+          <span class="total" id="tagTotal"></span>
+        </div>
       </div>
-      <div class="win-body">
+      <!-- 指标筛选 -->
+      <div class="sub-pane" id="subPane-metric">
         <div class="metric-grid" id="metricGrid"><div class="metric-item"><label>收盘价</label><div class="range"><input type="number" placeholder="下限" data-k="最近收盘价" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="最近收盘价" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>动态PE</label><div class="range"><input type="number" placeholder="下限" data-k="动态市盈率" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="动态市盈率" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>市净率</label><div class="range"><input type="number" placeholder="下限" data-k="市净率" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="市净率" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>总市值(亿)</label><div class="range"><input type="number" placeholder="下限" data-k="总市值（亿元）" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="总市值（亿元）" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>流通市值(亿)</label><div class="range"><input type="number" placeholder="下限" data-k="流通市值（亿元）" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="流通市值（亿元）" data-b="上限" step="0.01"></div></div></div>
+      </div>
+      <!-- 选股结果 -->
+      <div class="sub-pane" id="subPane-result">
+        <div class="result-bar">
+          <span class="info" id="resInfo"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table id="resTable"><thead><tr><th>证券名称</th><th>代码</th><th>交易板块</th><th>收盘价</th><th>动态PE</th><th>市净率</th><th>总市值(亿)</th><th>流通市值(亿)</th><th>操作</th></tr></thead><tbody id="resBody"><tr><td colspan="9" style="text-align:center;color:var(--dim);padding:30px">暂无数据</td></tr></tbody></table>
+        </div>
       </div>
     </div>
   </div>
@@ -2692,46 +2756,14 @@
     <button class="btn primary" id="btnFilter">开始筛选</button>
     <button class="btn gold" id="btnExport" disabled="">导出 Excel</button>
     <button class="btn ghost" id="btnReset">重置</button>
-    <button class="btn ghost" id="btnDslToggle">DSL 选股</button>
     <button class="btn ghost" id="btnUpdateDb">更新数据库</button>
   </div>
 
-  <!-- DSL 面板 -->
-  <div class="dsl-panel" id="dslPanel">
-    <div class="win">
-      <div class="win-head">
-        <span class="badge b3">DSL</span><h3>选股指令</h3>
-        <span class="hint" id="dslHint">输入选股条件，Ctrl+Enter 执行</span>
-      </div>
-      <div class="win-body">
-        <textarea id="dslInput" placeholder="例如：行业 = &quot;银行&quot; AND 市盈率 &lt; 8 AND 市净率 &lt; 1"></textarea>
-        <div class="actions" style="margin:10px 0 0">
-          <button class="btn primary" id="btnDslRun">执行指令</button>
-          <button class="btn ghost" id="btnDslHelp">语法帮助</button>
-        </div>
-        <div class="dsl-error" id="dslError" style="display:none"></div>
-        <div class="dsl-sql" id="dslSql" style="display:none"></div>
-        <div class="dsl-help" id="dslHelpPanel" style="display:none"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 日志 -->
-  <div class="win">
-    <div class="win-head"><span class="badge" style="background:#555">日志</span><h3>执行日志</h3></div>
-    <div class="win-body"><div class="log-box" id="logBox"><div class="log-line">就绪。请在上方选择条件后点击「开始筛选」。</div><div class="log-line err">[23:48:05] 加载 概念列表 失败: TypeError: Failed to fetch</div><div class="log-line err">[23:48:05] 加载 行业列表 失败: TypeError: Failed to fetch</div><div class="log-line">[23:48:05] 页面初始化完成，板块/行业/地域列表已加载。</div><div class="log-line err">[23:48:05] 加载 地域列表 失败: TypeError: Failed to fetch</div></div></div>
-  </div>
-
-  <!-- 结果 -->
-  <div class="win">
-    <div class="win-head">
-      <span class="badge" style="background:#555">结果</span><h3>筛选结果</h3>
-      <span class="hint" id="resInfo"></span>
-    </div>
-    <div class="win-body">
-      <div class="tbl-wrap">
-        <table id="resTable"><thead><tr><th>证券名称</th><th>代码</th><th>交易板块</th><th>收盘价</th><th>动态PE</th><th>市净率</th><th>总市值(亿)</th><th>流通市值(亿)</th><th>操作</th></tr></thead><tbody id="resBody"><tr><td colspan="9" style="text-align:center;color:var(--dim);padding:30px">暂无数据</td></tr></tbody></table>
-      </div>
+  <!-- 日志（可折叠） -->
+  <div class="log-section">
+    <div class="log-header" id="logHeader">执行日志 <span class="log-arrow">▾</span></div>
+    <div class="log-body" id="logBody">
+      <div class="log-box" id="logBox"><div class="log-line">就绪。请在上方选择条件后点击「开始筛选」。</div></div>
     </div>
   </div>
 
@@ -2782,6 +2814,23 @@ function fmtNum(v){
   const n=Number(v); return isNaN(n)?'<span class="none">—</span>':n.toFixed(2);
 }
 
+/* ============ 子窗口标签切换 ============ */
+function switchSubTab(tabName){
+  $$('.sub-tab').forEach(t=>t.classList.remove('on'));
+  $$('.sub-pane').forEach(p=>p.classList.remove('on'));
+  document.querySelector('.sub-tab[data-tab="'+tabName+'"]').classList.add('on');
+  document.getElementById('subPane-'+tabName).classList.add('on');
+}
+$$('.sub-tab').forEach(t=>{
+  t.addEventListener('click',()=>switchSubTab(t.dataset.tab));
+});
+
+/* ============ 日志折叠 ============ */
+$('#logHeader').addEventListener('click',()=>{
+  $('#logHeader').classList.toggle('collapsed');
+  $('#logBody').classList.toggle('collapsed');
+});
+
 /* ============ 初始化 ============ */
 async function init(){
   // 交易所板块（固定）
@@ -2825,12 +2874,10 @@ function renderOpts(paneId,list,key){
 function toggleSector(key,name,el){
   const arr=state.sector[key];
   if(name==='全部'){
-    // 全部 = 清空该维度选择（不传 = 全部）
     arr.length=0;
     $$('#pane-'+key+' .opt').forEach(o=>o.classList.remove('sel'));
     el.classList.add('sel');
   }else{
-    // 取消"全部"
     const allEl=$$('#pane-'+key+' .opt')[0];
     if(allEl) allEl.classList.remove('sel');
     const i=arr.indexOf(name);
@@ -2849,7 +2896,6 @@ function renderIndustry(){
   if(!state.industries.length){
     box.innerHTML='<div class="empty-hint">行业列表加载中…</div>';return;
   }
-  // 记录当前滚动位置，重建后恢复
   const scrollTop=box.scrollTop;
   state.industries.forEach(name=>{
     const el=document.createElement('div');
@@ -2881,13 +2927,11 @@ function updateIndCnt(){
 /* ============ 级联联动 ============ */
 let cascadeTimer=null;
 function refreshCascade(){
-  // 防抖
   clearTimeout(cascadeTimer);
   cascadeTimer=setTimeout(updatePreview,250);
 }
 
 async function updatePreview(){
-  // 构建预览参数（仅板块+行业，无指标）
   const params=collectParams(false);
   if(!hasSectorOrIndustry()){
     state.preview=[];
@@ -2903,8 +2947,6 @@ async function updatePreview(){
     const d=await api('/api/filter',params);
     if(d.success){
       state.preview=d.data||[];
-      // 联动：后端 process_securities 不返回 industry 字段，故仅刷新个股预览
-      // 行业列保持全量可选，不重建以保留已选状态与滚动位置
       renderStockList();
       $('#stkCnt').textContent=state.preview.length+' 只';
       $('#c2').classList.add('on'); $('#c3').classList.add('on');
@@ -2918,9 +2960,6 @@ async function updatePreview(){
 function hasSectorOrIndustry(){
   return state.sector.exchange.length||state.sector.concept.length||state.sector.region.length||state.industry.length;
 }
-function getIndustryOf(s){return s['行业']||s['industry']||'';}
-// 预览返回的数据没有行业字段，需通过名称关键字间接——实际后端返回的是process_securities结果，无industry字段
-// 因此行业联动改为：预览不联动行业列表（保持全量），仅联动个股。行业可选全量。
 
 /* ============ 渲染：个股预览 ============ */
 function renderStockList(){
@@ -2933,7 +2972,6 @@ function renderStockList(){
     return;
   }
   box.innerHTML='';
-  // 限制渲染数量避免卡顿
   const MAX=300;
   list.slice(0,MAX).forEach(s=>{
     const el=document.createElement('div');
@@ -2956,7 +2994,6 @@ function renderStockList(){
 /* ============ 标签 ============ */
 function updateTags(){
   const box=$('#selTags');
-  // 清除旧标签
   box.querySelectorAll('.tag').forEach(t=>t.remove());
   const all=[
     ...state.sector.exchange.map(n=>['exchange',n]),
@@ -2970,7 +3007,6 @@ function updateTags(){
     t.addEventListener('click',()=>{
       const arr=state.sector[key]; const i=arr.indexOf(name);
       if(i>=0){arr.splice(i,1);
-        // 同步取消勾选UI
         $$('#pane-'+key+' .opt').forEach(o=>{if(o.querySelector('span:nth-child(2)').textContent===name)o.classList.remove('sel');});
         updateTags(); refreshCascade();
       }
@@ -3000,17 +3036,14 @@ function renderMetrics(){
 /* ============ 收集参数 ============ */
 function collectParams(withMetrics){
   const p={security_type:state.secType};
-  // 板块：去掉"全部"
   const ex=state.sector.exchange.filter(x=>x!=='全部');
   const co=state.sector.concept.filter(x=>x!=='全部');
   const rg=state.sector.region.filter(x=>x!=='全部');
   if(ex.length)p.exchange=ex;
   if(co.length)p.concept=co;
   if(rg.length)p.region=rg;
-  // 行业
   const ind=state.industry.filter(x=>x!=='全部');
   if(ind.length)p.industry=ind;
-  // 指标
   if(withMetrics){
     const mc={};
     METRIC_DEFS.forEach(m=>{
@@ -3035,6 +3068,7 @@ $('#btnFilter').addEventListener('click',async()=>{
       (d.log||[]).forEach(l=>log(l));
       log(`筛选完成，共 ${state.result.length} 只。`,'ok');
       renderResult();
+      switchSubTab('result');
       $('#btnExport').disabled=state.result.length===0;
     }else{
       (d.log||[]).forEach(l=>log(l,'err'));
@@ -3105,7 +3139,6 @@ $$('.tab').forEach(t=>{
 });
 
 /* ============ DSL ============ */
-$('#btnDslToggle').addEventListener('click',()=>{$('#dslPanel').classList.toggle('on');});
 // Ctrl+Enter 快捷执行
 $('#dslInput').addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();$('#btnDslRun').click();}
@@ -3126,6 +3159,7 @@ $('#btnDslRun').addEventListener('click',async()=>{
       log(`DSL 筛选完成，共 ${state.result.length} 只。`,'ok');
       if(d.sql){$('#dslSql').style.display='block';$('#dslSql').textContent='SQL: '+d.sql;}
       renderResult();
+      switchSubTab('result');
       $('#btnExport').disabled=state.result.length===0;
     }else{
       log('DSL 错误: '+(d.error||''),'err');
@@ -3222,6 +3256,5 @@ $('#btnUpdateDb').addEventListener('click',async()=>{
 /* ============ 启动 ============ */
 init();
 </script>
-
 
 <div class="light"></div><div data-trae-edit-ui="true"></div></body></html>

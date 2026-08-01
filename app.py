@@ -2282,6 +2282,11 @@ def detail():
     exchange = request.args.get('exchange', '')
     return render_template('detail.html', code=code, name=name, sec_type=sec_type, exchange=exchange)
 
+@app.route('/results')
+def results():
+    """独立结果页面"""
+    return render_template('results.html')
+
 @app.route('/api/kline', methods=['GET'])
 def api_kline():
     """获取指定证券的K线数据"""

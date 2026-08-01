@@ -1,0 +1,240 @@
+/* =========================== 【证券详情页 - 红白简约主题】 =========================== */
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --border:#e5e7eb;
+  --fg:#1f2329; --muted:#6b7280; --dim:#9ca3af;
+  --red:#e63946; --red-d:#c1121f; --red-l:#fdecec;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 20px;
+}
+
+.detail-container {
+    position: relative;
+    width: 1300px;
+    height: 650px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(31,35,41,.06);
+    padding: 10px;
+}
+
+/* 信息面板 (右上角) */
+.info-panel {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 240px;
+    height: 380px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafbfc;
+    overflow-y: auto;
+    z-index: 30;
+}
+
+.info-panel h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--red-d);
+    border-bottom: 2px solid var(--red);
+    padding-bottom: 8px;
+}
+
+.info-panel p {
+    font-size: 13px;
+    margin: 5px 0;
+    color: var(--fg);
+}
+
+/* 基本面信息按钮 */
+.btn-fundamental {
+    position: absolute;
+    top: 430px;
+    right: 30px;
+    width: 240px;
+    height: 30px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background .15s;
+    z-index: 30;
+}
+
+.btn-fundamental:hover {
+    background: var(--red-d);
+}
+
+/* AI分析按钮 */
+.btn-ai {
+    position: absolute;
+    top: 465px;
+    right: 30px;
+    width: 240px;
+    height: 30px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background .15s;
+    z-index: 30;
+}
+
+.btn-ai:hover {
+    background: var(--red-d);
+}
+
+/* 工具箱按钮 */
+.btn-toolbox {
+    position: absolute;
+    top: 500px;
+    right: 30px;
+    width: 240px;
+    height: 30px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background .15s;
+    z-index: 30;
+}
+
+.btn-toolbox:hover {
+    background: var(--red-d);
+}
+
+/* 导出历史数据按钮 */
+.btn-export {
+    position: absolute;
+    top: 535px;
+    right: 30px;
+    width: 240px;
+    height: 30px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background .15s;
+    z-index: 30;
+}
+
+.btn-export:hover {
+    background: var(--red-d);
+}
+
+/* 关闭按钮 */
+.btn-close {
+    position: absolute;
+    top: 570px;
+    right: 30px;
+    width: 240px;
+    height: 30px;
+    background: #6b7280;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background .15s;
+    z-index: 30;
+}
+
+.btn-close:hover {
+    background: #4b5563;
+}
+
+/* K线类型与指标组合区域 */
+.kline-indicator-bar {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 970px;
+    height: 45px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    z-index: 30;
+}
+
+.kline-type-selector,
+.indicator-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+}
+
+.kline-type-selector .label,
+.indicator-selector .label {
+    font-weight: bold;
+    margin-right: 4px;
+    color: var(--fg);
+}
+
+.kline-type-selector label,
+.indicator-selector label {
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--muted);
+}
+
+/* 画布通用样式 */
+canvas {
+    position: absolute;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    z-index: 10;
+}
+
+#canvas-kline {
+    top: 80px;
+    left: 30px;
+}
+
+#canvas-indicator {
+    top: 385px;
+    left: 30px;
+}
+
+#canvas-second-timeline {
+    top: 510px;
+    left: 30px;
+}
+
+#canvas-timeline {
+    top: 560px;
+    left: 30px;
+}

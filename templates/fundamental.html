@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本面信息 - {{ name }}({{ code }})</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fundamental.css') }}">
+</head>
+<body>
+    <div class="fundamental-container">
+        <!-- 标题栏 -->
+        <div class="header-bar">
+            <h2>{{ name }} ({{ code }}) - 基本面信息</h2>
+            <button class="btn-close" onclick="window.close()">关闭</button>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading-container" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>正在加载基本面数据...</p>
+        </div>
+
+        <!-- 内容区域 -->
+        <div id="content-container" class="content-container" style="display: none;">
+            <!-- 公司基本信息卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🏢 公司基本信息</span>
+                    <span class="permission-tag" id="company-permission-tag"></span>
+                </div>
+                <div class="card-body" id="company-info-body">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
+            <!-- 财务信息卡片（替代原财务摘要） -->
+            <div class="card financial-card">
+                <div class="card-header">
+                    <span class="card-title">💰 财务信息</span>
+                    <span class="permission-tag" id="financial-permission-tag"></span>
+                </div>
+                <div class="card-body financial-body">
+                    <!-- 上方：财务报表选项卡区域 -->
+                    <div class="financial-section">
+                        <div class="section-header">财务报表</div>
+                        <div class="tab-bar" id="statement-tabs">
+                            <button class="tab-btn active" data-tab="balance">资产负债表</button>
+                            <button class="tab-btn" data-tab="income">利润表</button>
+                            <button class="tab-btn" data-tab="cashflow">现金流量表</button>
+                        </div>
+                        <div class="tab-content active" id="tab-balance">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="balance-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-income">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="income-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-cashflow">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="cashflow-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 下方：财务指标选项卡区域 -->
+                    <div class="financial-section">
+                        <div class="section-header">财务指标</div>
+                        <div class="tab-bar" id="indicator-tabs">
+                            <button class="tab-btn active" data-tab="per_share">每股指标</button>
+                            <button class="tab-btn" data-tab="profit">盈利能力</button>
+                            <button class="tab-btn" data-tab="growth">成长能力</button>
+                            <button class="tab-btn" data-tab="operation">营运能力</button>
+                            <button class="tab-btn" data-tab="solvency">偿债能力</button>
+                        </div>
+                        <div class="tab-content active" id="tab-per_share">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="per_share-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-profit">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="profit-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-growth">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="growth-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-operation">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="operation-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="tab-solvency">
+                            <div class="table-scroll-wrapper">
+                                <table class="financial-table" id="solvency-table">
+                                    <!-- 动态填充 -->
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 估值指标卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📊 估值信息</span>
+                    <span class="permission-tag" id="valuation-permission-tag"></span>
+                </div>
+                <div class="card-body" id="valuation-info-body">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
+
+            <!-- 股东信息卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">👥 股东信息</span>
+                    <span class="permission-tag" id="shareholder-permission-tag"></span>
+                </div>
+                <div class="card-body" id="shareholder-info-body">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
+            <!-- 最近公告卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📰 最近公告</span>
+                    <span class="permission-tag" id="news-permission-tag"></span>
+                </div>
+                <div class="card-body" id="news-info-body">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 错误信息区域 -->
+        <div id="error-container" class="error-container" style="display: none;">
+            <p class="error-message" id="error-message"></p>
+            <button class="btn-retry" id="btn-retry">重新加载</button>
+        </div>
+    </div>
+
+    <!-- 传递证券参数给 JavaScript -->
+    <script>
+        window.securityInfo = {
+            code: "{{ code }}",
+            name: "{{ name }}",
+            type: "{{ sec_type }}",
+            exchange: "{{ exchange }}"
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/fundamental.js') }}"></script>
+</body>
+</html>

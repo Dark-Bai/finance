@@ -1,0 +1,528 @@
+/* =========================== 【基本面信息页 - 红白简约主题】 =========================== */
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --border:#e5e7eb;
+  --fg:#1f2329; --muted:#6b7280; --dim:#9ca3af;
+  --red:#e63946; --red-d:#c1121f; --red-l:#fdecec; --red-bd:#f3c4c7;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.fundamental-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(31,35,41,.06);
+    overflow: hidden;
+}
+
+/* 标题栏 */
+.header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-d) 100%);
+    color: #fff;
+}
+
+.header-bar h2 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.btn-close {
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background 0.2s;
+}
+
+.btn-close:hover {
+    background: rgba(255,255,255,0.32);
+}
+
+/* 加载状态 */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--red-bd);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+    margin-top: 15px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* 内容区域 */
+.content-container {
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 卡片样式 */
+.card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--fg);
+}
+
+.permission-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #2f9e6f;
+    color: #fff;
+}
+
+.permission-tag.denied {
+    background: #dc3545;
+}
+
+.permission-tag.partial {
+    background: #ffc107;
+    color: #333;
+}
+
+.card-body {
+    padding: 18px;
+}
+
+/* 信息网格 - 用于估值指标、财务比率等 */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.info-label {
+    font-size: 13px;
+    color: var(--muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-right: 12px;
+}
+
+.info-value {
+    font-size: 14px;
+    color: var(--fg);
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+    font-variant-numeric: tabular-nums;
+    word-break: break-word;
+}
+
+.info-value.highlight {
+    color: var(--red);
+    font-weight: bold;
+}
+
+.info-value.positive {
+    color: #dc3545;
+}
+
+.info-value.negative {
+    color: #2f9e6f;
+}
+
+/* 表格样式 */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table th {
+    background: #fafbfc;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--fg);
+}
+
+.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    color: #4b5563;
+}
+
+.data-table tr:hover {
+    background: var(--red-l);
+}
+
+/* 滚动表格容器（股东户数） */
+.scrollable-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.scrollable-table-container .data-table {
+    border: none;
+}
+
+/* 超出权限提示 */
+.permission-denied-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    color: var(--dim);
+}
+
+.permission-denied-message .icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.permission-denied-message p {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.permission-denied-message .hint {
+    font-size: 12px;
+    color: var(--dim);
+}
+
+/* 公告列表 */
+.news-list {
+    list-style: none;
+}
+
+.news-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.news-item:last-child {
+    border-bottom: none;
+}
+
+.news-date {
+    width: 100px;
+    font-size: 12px;
+    color: var(--dim);
+    flex-shrink: 0;
+}
+
+.news-title {
+    flex: 1;
+    font-size: 13px;
+    color: var(--fg);
+}
+
+.news-type {
+    padding: 2px 8px;
+    background: var(--red-l);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--red-d);
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+/* 错误容器 */
+.error-container {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.error-message {
+    color: var(--red-d);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.btn-retry {
+    padding: 8px 24px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background 0.2s;
+}
+
+.btn-retry:hover {
+    background: var(--red-d);
+}
+
+/* 分段标题 */
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--fg);
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+
+/* 两列布局 */
+.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+    .info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .info-label {
+        white-space: normal;
+        word-break: break-word;
+    }
+}
+
+/* 公司基本信息行布局 */
+.company-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-bottom: 10px;
+}
+
+.company-info-row .info-item {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+/* =========================== 【财务信息板块样式】 =========================== */
+.financial-card .card-body {
+    padding: 0;
+}
+
+.financial-section {
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.financial-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--fg);
+    margin-bottom: 12px;
+    padding-left: 2px;
+}
+
+/* 选项卡栏 */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    padding: 6px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+    font-family: inherit;
+}
+
+.tab-btn:hover {
+    color: var(--red);
+    background: var(--red-l);
+}
+
+.tab-btn.active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 表格滚动容器 */
+.table-scroll-wrapper {
+    max-height: 400px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+}
+
+/* 财务表格样式 */
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: auto;
+    white-space: nowrap;
+}
+
+.financial-table th {
+    background: #fafbfc;
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--fg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.financial-table th:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: #fafbfc;
+    z-index: 11;
+}
+
+.financial-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    color: #4b5563;
+}
+
+.financial-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: var(--fg);
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 9;
+}
+
+.financial-table tr:hover td:first-child {
+    background: var(--red-l);
+}
+
+.financial-table tr:hover td {
+    background: var(--red-l);
+}
+
+.financial-table .unit-row {
+    font-size: 12px;
+    color: var(--dim);
+    font-weight: normal;
+}
+
+/* 权限提示样式（财务板块内部） */
+.financial-permission-denied {
+    padding: 20px;
+    text-align: center;
+    color: var(--dim);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .tab-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    .financial-table th,
+    .financial-table td {
+        padding: 6px 8px;
+    }
+}
+
+/* 财务报表小节标题行样式 */
+.financial-table .section-row td {
+    background: var(--red-l);
+    font-weight: bold;
+    color: var(--red-d);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--red-bd);
+    text-align: left;
+}
+
+.financial-table .section-row:hover td {
+    background: #f9dadc;
+}

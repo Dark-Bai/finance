@@ -161,9 +161,13 @@
 
   /* ============ 合并窗口布局 ============ */
   .dsl-section{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
-  .dsl-section-header{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--red-l)}
+  .dsl-section-header{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--red-l);cursor:pointer;user-select:none}
   .dsl-section-header h3{font-size:13px;font-weight:600;color:var(--red-d)}
   .dsl-section-header .hint{font-size:11px;color:var(--muted);margin-left:auto}
+  .dsl-section-header .collapse-arrow{font-size:12px;color:var(--muted);transition:transform .2s;margin-left:4px}
+  .dsl-section.collapsed .dsl-section-header .collapse-arrow{transform:rotate(-90deg)}
+  .dsl-section.collapsed .dsl-section-header{border-bottom-color:transparent}
+  .dsl-section.collapsed .dsl-section-body{display:none}
   .dsl-section-body{padding:12px 16px}
   .dsl-section-body textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--fg);font-size:13px;font-family:'Consolas',monospace;padding:10px;resize:vertical;min-height:70px;outline:none}
   .dsl-section-body textarea:focus{border-color:var(--red)}
@@ -2669,12 +2673,13 @@
 
   <!-- DSL 区域（顶部显眼位置，始终可见） -->
   <div class="dsl-section" id="dslSection">
-    <div class="dsl-section-header">
+    <div class="dsl-section-header" id="dslSectionHeader">
       <span class="badge b3">DSL</span>
       <h3>选股指令</h3>
       <span class="hint">输入选股条件，Ctrl+Enter 执行</span>
+      <span class="collapse-arrow">▾</span>
     </div>
-    <div class="dsl-section-body">
+    <div class="dsl-section-body" id="dslSectionBody">
       <textarea id="dslInput" placeholder="例如：行业 = &quot;银行&quot; AND 市盈率 &lt; 8 AND 市净率 &lt; 1"></textarea>
       <div class="dsl-actions">
         <button class="btn primary" id="btnDslRun">执行指令</button>
@@ -2691,7 +2696,7 @@
     <div class="sub-tabs">
       <span class="sub-tab on" data-tab="sector">板块筛选</span>
       <span class="sub-tab" data-tab="metric">指标筛选</span>
-      <span class="sub-tab" data-tab="result">选股结果</span>
+      
     </div>
     <div class="sub-content">
       <!-- 板块筛选 -->
@@ -2739,15 +2744,7 @@
       <div class="sub-pane" id="subPane-metric">
         <div class="metric-grid" id="metricGrid"><div class="metric-item"><label>收盘价</label><div class="range"><input type="number" placeholder="下限" data-k="最近收盘价" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="最近收盘价" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>动态PE</label><div class="range"><input type="number" placeholder="下限" data-k="动态市盈率" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="动态市盈率" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>市净率</label><div class="range"><input type="number" placeholder="下限" data-k="市净率" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="市净率" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>总市值(亿)</label><div class="range"><input type="number" placeholder="下限" data-k="总市值（亿元）" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="总市值（亿元）" data-b="上限" step="0.01"></div></div><div class="metric-item"><label>流通市值(亿)</label><div class="range"><input type="number" placeholder="下限" data-k="流通市值（亿元）" data-b="下限" step="0.01"><span>~</span><input type="number" placeholder="上限" data-k="流通市值（亿元）" data-b="上限" step="0.01"></div></div></div>
       </div>
-      <!-- 选股结果 -->
-      <div class="sub-pane" id="subPane-result">
-        <div class="result-bar">
-          <span class="info" id="resInfo"></span>
-        </div>
-        <div class="tbl-wrap">
-          <table id="resTable"><thead><tr><th>证券名称</th><th>代码</th><th>交易板块</th><th>收盘价</th><th>动态PE</th><th>市净率</th><th>总市值(亿)</th><th>流通市值(亿)</th><th>操作</th></tr></thead><tbody id="resBody"><tr><td colspan="9" style="text-align:center;color:var(--dim);padding:30px">暂无数据</td></tr></tbody></table>
-        </div>
-      </div>
+      
     </div>
   </div>
 
@@ -2755,6 +2752,7 @@
   <div class="actions">
     <button class="btn primary" id="btnFilter">开始筛选</button>
     <button class="btn gold" id="btnExport" disabled="">导出 Excel</button>
+    <button class="btn primary" id="btnViewResults" disabled="" style="background:var(--red-d)">查看完整结果</button>
     <button class="btn ghost" id="btnReset">重置</button>
     <button class="btn ghost" id="btnUpdateDb">更新数据库</button>
   </div>
@@ -3067,8 +3065,7 @@ $('#btnFilter').addEventListener('click',async()=>{
       state.result=d.data||[];
       (d.log||[]).forEach(l=>log(l));
       log(`筛选完成，共 ${state.result.length} 只。`,'ok');
-      renderResult();
-      switchSubTab('result');
+      enableViewResults();
       $('#btnExport').disabled=state.result.length===0;
     }else{
       (d.log||[]).forEach(l=>log(l,'err'));
@@ -3079,19 +3076,18 @@ $('#btnFilter').addEventListener('click',async()=>{
   $('#btnFilter').textContent='开始筛选';
 });
 
-function renderResult(){
-  const body=$('#resBody');
-  $('#resInfo').textContent=state.result.length?`共 ${state.result.length} 条`:'';
-  if(!state.result.length){
-    body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--dim);padding:30px">暂无数据</td></tr>';return;
-  }
-  body.innerHTML='';
-  state.result.forEach(s=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="nm">${s['证券名称']||''}</td><td>${s['证券代码']||''}</td><td>${s['交易板块']?`<span class="tag-bd">${s['交易板块']}</span>`:'—'}</td><td class="num">${fmtNum(s['最近收盘价'])}</td><td class="num">${fmtNum(s['动态市盈率'])}</td><td class="num">${fmtNum(s['市净率'])}</td><td class="num">${fmtNum(s['总市值（亿元）'])}</td><td class="num">${fmtNum(s['流通市值（亿元）'])}</td><td><a href="/detail?code=${s['证券代码']}&name=${encodeURIComponent(s['证券名称']||'')}&type=股票&exchange=${s['交易所码']||''}">详情</a></td>`;
-    body.appendChild(tr);
-  });
+function enableViewResults(){
+  const btn=$('#btnViewResults');
+  btn.disabled=false;
+  btn.textContent='查看完整结果 ('+state.result.length+' 只)';
 }
+
+/* ============ 查看完整结果 ============ */
+$('#btnViewResults').addEventListener('click',()=>{
+  if(!state.result.length)return;
+  localStorage.setItem('stockResultData',JSON.stringify(state.result));
+  window.open('/results','_blank');
+});
 
 /* ============ 导出 ============ */
 $('#btnExport').addEventListener('click',async()=>{
@@ -3118,8 +3114,8 @@ $('#btnReset').addEventListener('click',()=>{
   $$('.opt.sel').forEach(o=>o.classList.remove('sel'));
   $$('.opt').forEach(o=>{const n=o.textContent.trim();if(n==='全部')o.classList.add('sel');});
   $('#stkSearch').value='';
-  renderMetrics();renderIndustry();renderStockList();renderResult();
-  $('#btnExport').disabled=true;$('#resInfo').textContent='';
+  renderMetrics();renderIndustry();renderStockList();
+  $('#btnExport').disabled=true;$('#btnViewResults').disabled=true;$('#btnViewResults').textContent='查看完整结果';
   log('已重置所有筛选条件。');
 });
 
@@ -3136,6 +3132,11 @@ $$('.tab').forEach(t=>{
     $('#pane-'+tab).classList.add('on');
     state.curTab=tab;
   });
+});
+
+/* ============ DSL 折叠 ============ */
+$('#dslSectionHeader').addEventListener('click',()=>{
+  $('#dslSection').classList.toggle('collapsed');
 });
 
 /* ============ DSL ============ */
@@ -3158,8 +3159,7 @@ $('#btnDslRun').addEventListener('click',async()=>{
       state.result=d.data||[];
       log(`DSL 筛选完成，共 ${state.result.length} 只。`,'ok');
       if(d.sql){$('#dslSql').style.display='block';$('#dslSql').textContent='SQL: '+d.sql;}
-      renderResult();
-      switchSubTab('result');
+      enableViewResults();
       $('#btnExport').disabled=state.result.length===0;
     }else{
       log('DSL 错误: '+(d.error||''),'err');

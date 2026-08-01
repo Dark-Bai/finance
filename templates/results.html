@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>筛选结果 - 证券筛选系统</title>
+<style>
+  :root{--bg:#f5f6f8;--card:#fff;--border:#e5e7eb;--fg:#1f2329;--muted:#6b7280;--dim:#9ca3af;--red:#e63946;--red-d:#c1121f;--red-l:#fdecec;--red-bd:#f3c4c7;--ok:#2f9e6f}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans CJK SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--fg);font-size:14px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  a{color:var(--red-d);text-decoration:none}
+  a:hover{text-decoration:underline;color:var(--red)}
+
+  /* header */
+  header{background:linear-gradient(135deg,#e63946,#c1121f);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:0 2px 8px rgba(230,57,70,.18)}
+  header h1{color:#fff;font-size:16px;font-weight:700;letter-spacing:.5px}
+  header .info{color:rgba(255,255,255,.8);font-size:12px;margin-left:auto}
+  header .btn-back{background:rgba(255,255,255,.22);border:none;color:#fff;padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit}
+  header .btn-back:hover{background:rgba(255,255,255,.35)}
+  header .btn-export{background:rgba(255,255,255,.22);border:none;color:#fff;padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit}
+  header .btn-export:hover{background:rgba(255,255,255,.35)}
+
+  /* main layout */
+  .main-wrap{display:flex;flex:1;overflow:hidden;padding:12px;gap:12px}
+
+  /* left panel: stock list */
+  .left-panel{flex:0 0 420px;background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
+  .left-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:#fcfcfd;flex-shrink:0}
+  .left-header h3{font-size:13px;font-weight:600}
+  .left-header .cnt{font-size:12px;color:var(--muted);margin-left:auto}
+  .left-header input[type=search]{background:#fff;border:1px solid var(--border);border-radius:4px;color:var(--fg);font-size:11px;padding:3px 8px;width:120px;outline:none}
+  .left-header input[type=search]:focus{border-color:var(--red)}
+  .tbl-wrap{flex:1;overflow-y:auto;overflow-x:hidden}
+  .tbl-wrap::-webkit-scrollbar{width:6px}
+  .tbl-wrap::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead{position:sticky;top:0;z-index:2}
+  thead th{background:#fafbfc;color:var(--muted);font-weight:600;padding:7px 8px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;position:relative}
+  thead th:hover{background:var(--red-l);color:var(--red-d)}
+  thead th .sort-icon{display:inline-block;width:14px;text-align:center;color:var(--dim);font-size:10px;margin-left:2px}
+  thead th.sort-asc .sort-icon{color:var(--red)}
+  thead th.sort-desc .sort-icon{color:var(--red)}
+  tbody tr{cursor:pointer;transition:background .1s}
+  tbody tr:hover{background:var(--red-l)}
+  tbody tr.sel{background:var(--red-l);border-left:3px solid var(--red)}
+  tbody td{padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  tbody td.nm{color:var(--fg);font-weight:500}
+  tbody td.num{text-align:right;color:var(--red-d);font-variant-numeric:tabular-nums}
+  tbody td.num.none{color:var(--dim)}
+  tbody td .tag-bd{font-size:10px;background:var(--card-hi,var(--red-l));color:var(--red-d);padding:1px 5px;border-radius:3px}
+  .empty-hint{padding:30px;text-align:center;color:var(--dim);font-size:13px}
+
+  /* right panel: kline chart */
+  .right-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}
+  .right-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#fcfcfd;flex-shrink:0;flex-wrap:wrap}
+  .right-header .stock-name{font-size:14px;font-weight:700;color:var(--red-d);min-width:100px}
+  .right-header .stock-code{font-size:12px;color:var(--muted)}
+  .right-header .sep{color:var(--border);font-size:14px}
+  .right-header .label{font-size:11px;color:var(--muted)}
+  .kline-selector{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .kline-selector label{font-size:11px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:2px}
+  .kline-selector input[type=radio]{margin:0;accent-color:var(--red)}
+  .chart-area{flex:1;position:relative;display:flex;flex-direction:column;padding:8px 10px 0}
+  .chart-area canvas{width:100%;flex-shrink:0}
+  .chart-hint{text-align:center;color:var(--dim);font-size:13px;padding:40px;margin:auto}
+
+  /* responsive */
+  @media(max-width:1100px){.left-panel{flex:0 0 340px}}
+  @media(max-width:860px){.main-wrap{flex-direction:column}.left-panel{flex:none;max-height:300px}.right-panel{flex:1;min-height:400px}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>证券筛选结果</h1>
+  <span class="info" id="headerInfo"></span>
+  <button class="btn-export" id="btnExport" disabled>导出 Excel</button>
+  <button class="btn-back" onclick="window.location.href='/'">← 返回筛选</button>
+</header>
+
+<div class="main-wrap">
+  <!-- 左侧：股票列表 -->
+  <div class="left-panel">
+    <div class="left-header">
+      <h3>股票列表</h3>
+      <input type="search" id="stkSearch" placeholder="搜索名称/代码">
+      <span class="cnt" id="listCnt">0 只</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="resTable">
+        <thead>
+          <tr>
+            <th data-field="证券名称">名称 <span class="sort-icon">⇅</span></th>
+            <th data-field="证券代码">代码 <span class="sort-icon">⇅</span></th>
+            <th data-field="交易板块">板块 <span class="sort-icon">⇅</span></th>
+            <th data-field="最近收盘价" class="num">收盘价 <span class="sort-icon">⇅</span></th>
+            <th data-field="动态市盈率" class="num">PE <span class="sort-icon">⇅</span></th>
+            <th data-field="市净率" class="num">PB <span class="sort-icon">⇅</span></th>
+            <th data-field="总市值（亿元）" class="num">总市值 <span class="sort-icon">⇅</span></th>
+            <th data-field="流通市值（亿元）" class="num">流通市值 <span class="sort-icon">⇅</span></th>
+          </tr>
+        </thead>
+        <tbody id="resBody"><tr><td colspan="8" class="empty-hint">暂无数据</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 右侧：K线图 -->
+  <div class="right-panel">
+    <div class="right-header">
+      <span class="stock-name" id="chartStockName">请选择股票</span>
+      <span class="stock-code" id="chartStockCode"></span>
+      <span class="sep">|</span>
+      <div class="kline-selector">
+        <span class="label">K线：</span>
+        <label><input type="radio" name="ktype" value="101" checked> 日K</label>
+        <label><input type="radio" name="ktype" value="102"> 周K</label>
+        <label><input type="radio" name="ktype" value="103"> 月K</label>
+        <label><input type="radio" name="ktype" value="5"> 5分</label>
+        <label><input type="radio" name="ktype" value="15"> 15分</label>
+        <label><input type="radio" name="ktype" value="30"> 30分</label>
+        <label><input type="radio" name="ktype" value="60"> 60分</label>
+      </div>
+      <span class="sep">|</span>
+      <div class="kline-selector">
+        <span class="label">指标：</span>
+        <label><input type="radio" name="indicator" value="成交量" checked> 成交量</label>
+        <label><input type="radio" name="indicator" value="成交额"> 成交额</label>
+        <label><input type="radio" name="indicator" value="RSI"> RSI</label>
+        <label><input type="radio" name="indicator" value="KDJ"> KDJ</label>
+        <label><input type="radio" name="indicator" value="MACD"> MACD</label>
+      </div>
+    </div>
+    <div class="chart-area" id="chartArea">
+      <div class="chart-hint" id="chartHint">请在左侧列表点击股票查看K线图</div>
+      <canvas id="canvasKline" width="800" height="280" style="display:none"></canvas>
+      <canvas id="canvasIndicator" width="800" height="110" style="display:none"></canvas>
+      <canvas id="canvasTimeline" width="800" height="45" style="display:none"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ 全局状态 ============ */
+let stockData = [];              // 全部股票数据
+let sortField = '证券名称';      // 当前排序字段
+let sortAsc = true;              // 排序方向
+let selectedStock = null;        // 当前选中股票
+
+// K线图状态
+let currentKlineData = [];
+let currentKtype = '101';
+let currentIndicator = '成交量';
+let chartCode = '', chartExchange = '';
+let canvasK, ctxK, canvasI, ctxI, canvasT, ctxT;
+let leftSliderX = 30, rightSliderX = 740;
+let draggingSlider = null;
+let totalDays = 0;
+let allDates=[], allOpen=[], allClose=[], allHigh=[], allLow=[], allVolume=[], allAmount=[];
+let currentChartData=[], currentDates=[], currentOpen=[], currentClose=[], currentHigh=[], currentLow=[], currentVolume=[], currentAmount=[];
+let ma5=[], ma10=[], ma20=[], ma60=[];
+let volumeMa5=[], volumeMa10=[];
+let amountMa5=[], amountMa10=[];
+let rsi6=[], rsi12=[], rsi24=[];
+let k=[], d=[], j=[];
+let dif=[], dea=[], macd=[];
+let mouseInChart=false, verticalLineKline=null, hoverInfo={};
+
+/* ============ 工具函数 ============ */
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+function fmtNum(v){
+  if(v==='None'||v===null||v===undefined||v==='') return '<span class="none">—</span>';
+  const n=Number(v); return isNaN(n)?'<span class="none">—</span>':n.toFixed(2);
+}
+
+/* ============ 加载数据 ============ */
+function loadData(){
+  try{
+    const raw=localStorage.getItem('stockResultData');
+    if(!raw){$('#resBody').innerHTML='<tr><td colspan="8" class="empty-hint">未找到筛选结果数据，请先返回筛选页执行筛选</td></tr>';return;}
+    stockData=JSON.parse(raw);
+    $('#headerInfo').textContent='共 '+stockData.length+' 只证券';
+    $('#listCnt').textContent=stockData.length+' 只';
+    renderTable();
+    // 清除localStorage数据以免占用
+    // localStorage.removeItem('stockResultData');
+  }catch(e){console.error('数据加载失败',e);}
+}
+
+/* ============ 搜索过滤 ============ */
+$('#stkSearch').addEventListener('input',()=>renderTable());
+
+/* ============ 排序 ============ */
+function sortData(list, field, asc){
+  return [...list].sort((a,b)=>{
+    let va=a[field], vb=b[field];
+    if(va==='None'||va===null||va===undefined) va=asc?'':Number.MAX_VALUE;
+    if(vb==='None'||vb===null||vb===undefined) vb=asc?'':Number.MAX_VALUE;
+    const na=Number(va), nb=Number(vb);
+    if(!isNaN(na)&&!isNaN(nb)) return asc?na-nb:nb-na;
+    return asc?String(va).localeCompare(String(vb),'zh'):String(vb).localeCompare(String(va),'zh');
+  });
+}
+
+$$('#resTable thead th').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const field=th.dataset.field;
+    if(!field) return;
+    if(sortField===field){sortAsc=!sortAsc;}
+    else{sortField=field;sortAsc=true;}
+    $$('#resTable thead th').forEach(h=>{h.classList.remove('sort-asc','sort-desc');});
+    th.classList.add(sortAsc?'sort-asc':'sort-desc');
+    th.querySelector('.sort-icon').textContent=sortAsc?'▲':'▼';
+    renderTable();
+  });
+});
+
+/* ============ 渲染表格 ============ */
+function renderTable(){
+  const kw=($('#stkSearch').value||'').trim().toLowerCase();
+  let list=stockData;
+  if(kw) list=list.filter(s=>(s['证券名称']||'').toLowerCase().includes(kw)||(s['证券代码']||'').includes(kw));
+  list=sortData(list, sortField, sortAsc);
+  const body=$('#resBody');
+  if(!list.length){
+    body.innerHTML='<tr><td colspan="8" class="empty-hint">'+(kw?'无匹配结果':'暂无数据')+'</td></tr>';
+    return;
+  }
+  body.innerHTML='';
+  list.forEach(s=>{
+    const tr=document.createElement('tr');
+    if(selectedStock && s['证券代码']===selectedStock['证券代码']) tr.classList.add('sel');
+    tr.innerHTML=
+      '<td class="nm">'+escapeHtml(s['证券名称']||'')+'</td>'+
+      '<td>'+escapeHtml(s['证券代码']||'')+'</td>'+
+      '<td>'+(s['交易板块']?'<span class="tag-bd">'+escapeHtml(s['交易板块'])+'</span>':'—')+'</td>'+
+      '<td class="num">'+fmtNum(s['最近收盘价'])+'</td>'+
+      '<td class="num">'+fmtNum(s['动态市盈率'])+'</td>'+
+      '<td class="num">'+fmtNum(s['市净率'])+'</td>'+
+      '<td class="num">'+fmtNum(s['总市值（亿元）'])+'</td>'+
+      '<td class="num">'+fmtNum(s['流通市值（亿元）'])+'</td>';
+    tr.addEventListener('click',()=>selectStock(s));
+    body.appendChild(tr);
+  });
+}
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ============ 选中股票 ============ */
+function getExchangeFromCode(code){
+  if(!code) return '';
+  const s=String(code).trim();
+  if(s.startsWith('60')||s.startsWith('68')) return 'SH';
+  if(s.startsWith('00')||s.startsWith('30')) return 'SZ';
+  if(s.startsWith('83')||s.startsWith('87')||s.startsWith('43')||s.startsWith('92')) return 'BJ';
+  return '';
+}
+
+function selectStock(s){
+  selectedStock=s;
+  $$('#resBody tr').forEach(r=>r.classList.remove('sel'));
+  const rows=$$('#resBody tr');
+  for(let i=0;i<rows.length;i++){
+    if(rows[i].cells[1]&&rows[i].cells[1].textContent===s['证券代码']){rows[i].classList.add('sel');break;}
+  }
+  $('#chartStockName').textContent=s['证券名称']||'';
+  $('#chartStockCode').textContent=s['证券代码']||'';
+  chartCode=s['证券代码'];
+  chartExchange=s['交易所码']||getExchangeFromCode(s['证券代码']);
+  loadChart();
+}
+
+/* ============ K线图 ============ */
+function initCanvas(){
+  canvasK=$('#canvasKline'); ctxK=canvasK.getContext('2d');
+  canvasI=$('#canvasIndicator'); ctxI=canvasI.getContext('2d');
+  canvasT=$('#canvasTimeline'); ctxT=canvasT.getContext('2d');
+  // 响应式调整canvas尺寸
+  function resizeCanvas(){
+    const area=$('#chartArea');
+    const w=area.clientWidth-20;
+    if(w<300) return;
+    canvasK.width=Math.max(400,w); canvasK.style.width=w+'px';
+    canvasI.width=Math.max(400,w); canvasI.style.width=w+'px';
+    canvasT.width=Math.max(400,w); canvasT.style.width=w+'px';
+    rightSliderX=canvasK.width-60;
+    if(rightSliderX<100) rightSliderX=canvasK.width-30;
+    if(currentKlineData.length) drawAll();
+  }
+  window.addEventListener('resize',resizeCanvas);
+  resizeCanvas();
+}
+
+async function loadChart(){
+  if(!chartCode){showChartError('请先选择股票');return;}
+  if(!chartExchange) chartExchange=getExchangeFromCode(chartCode);
+  if(!chartExchange){showChartError('无法确定交易板块代码');return;}
+  const ktype=document.querySelector('input[name="ktype"]:checked').value;
+  currentKtype=ktype;
+  $('#chartHint').style.display='none';
+  canvasK.style.display='block'; canvasI.style.display='block'; canvasT.style.display='block';
+  // 显示加载状态
+  $('#chartStockName').innerHTML+=' <span class="loading" style="display:inline-block;width:10px;height:10px;border:2px solid var(--red-l);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:4px"></span>';
+  try{
+    const params=new URLSearchParams({code:chartCode,exchange:chartExchange,type:'股票',ktype});
+    const r=await fetch('/api/kline?'+params);
+    if(!r.ok){const err=await r.json().catch(()=>({error:'HTTP '+r.status}));showChartError('请求失败: '+(err.error||r.statusText));return;}
+    const d=await r.json();
+    if(d.error||!d.klines||!d.klines.length){showChartError('获取K线数据失败: '+(d.error||'数据为空'));return;}
+    currentKlineData=d.klines;
+    parseData();
+    calcIndicators();
+    drawAll();
+  }catch(e){showChartError('网络请求异常: '+e.message);}
+  // 移除加载指示器
+  const nm=$('#chartStockName');
+  nm.innerHTML=nm.innerHTML.replace(/<span class="loading".*<\/span>/,'');
+}
+
+function showChartError(msg){
+  $('#chartHint').style.display='block';
+  $('#chartHint').textContent=msg;
+  canvasK.style.display='none'; canvasI.style.display='none'; canvasT.style.display='none';
+}
+
+/* ============ 数据解析 ============ */
+function parseData(){
+  allDates=[]; allOpen=[]; allClose=[]; allHigh=[]; allLow=[]; allVolume=[]; allAmount=[];
+  currentKlineData.forEach(line=>{
+    const parts=line.split(',');
+    allDates.push(parts[0]);
+    allOpen.push(parseFloat(parts[1]));
+    allClose.push(parseFloat(parts[2]));
+    allHigh.push(parseFloat(parts[3]));
+    allLow.push(parseFloat(parts[4]));
+    allVolume.push(parseFloat(parts[5]));
+    allAmount.push(parts[6]?parseFloat(parts[6]):0);
+  });
+  totalDays=allDates.length;
+  leftSliderX=30; rightSliderX=canvasK.width-60;
+  updateVisibleRange();
+}
+
+function updateVisibleRange(){
+  const totalPixels=canvasK.width-60;
+  const startIdx=Math.floor((leftSliderX-30)/totalPixels*totalDays);
+  const endIdx=Math.floor((rightSliderX-30)/totalPixels*totalDays);
+  const s=Math.max(0,Math.min(startIdx,totalDays-1));
+  const e=Math.max(s+1,Math.min(endIdx+1,totalDays));
+  currentDates=allDates.slice(s,e);
+  currentOpen=allOpen.slice(s,e);
+  currentClose=allClose.slice(s,e);
+  currentHigh=allHigh.slice(s,e);
+  currentLow=allLow.slice(s,e);
+  currentVolume=allVolume.slice(s,e);
+  currentAmount=allAmount.slice(s,e);
+  currentChartData=currentKlineData.slice(s,e);
+}
+
+/* ============ 指标计算 ============ */
+function calcMA(prices,period){const r=[];for(let i=0;i<prices.length;i++){if(i<period-1){r.push(null);}else{let s=0;for(let j=i-period+1;j<=i;j++)s+=prices[j];r.push(s/period);}}return r;}
+function calcRSI(prices,period){
+  if(prices.length<=period) return new Array(prices.length).fill(null);
+  const rsi=new Array(period).fill(null);
+  const changes=[]; for(let i=1;i<prices.length;i++) changes.push(prices[i]-prices[i-1]);
+  const gains=changes.map(c=>Math.max(c,0)), losses=changes.map(c=>Math.max(-c,0));
+  let avgGain=gains.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  let avgLoss=losses.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  rsi.push(avgLoss===0?100:100-100/(1+avgGain/avgLoss));
+  for(let i=period;i<changes.length;i++){
+    avgGain=(avgGain*(period-1)+gains[i])/period;
+    avgLoss=(avgLoss*(period-1)+losses[i])/period;
+    rsi.push(avgLoss===0?100:100-100/(1+avgGain/avgLoss));
+  }
+  return rsi;
+}
+function calcKDJ(highs,lows,closes){
+  const n=9; const kArr=new Array(n).fill(50),dArr=new Array(n).fill(50),jArr=new Array(n).fill(50);
+  if(closes.length<=n) return [kArr,dArr,jArr];
+  for(let i=n;i<closes.length;i++){
+    const rh=Math.max(...highs.slice(i-n+1,i+1)), rl=Math.min(...lows.slice(i-n+1,i+1));
+    const rsv=rh===rl?50:(closes[i]-rl)/(rh-rl)*100;
+    const kv=2/3*kArr[i-1]+1/3*rsv, dv=2/3*dArr[i-1]+1/3*kv, jv=3*kv-2*dv;
+    kArr.push(kv); dArr.push(dv); jArr.push(jv);
+  }
+  return [kArr,dArr,jArr];
+}
+function calcMACD(prices){
+  const ema12=[prices[0]],ema26=[prices[0]];
+  for(let i=1;i<prices.length;i++){ema12.push(ema12[i-1]*11/13+prices[i]*2/13);ema26.push(ema26[i-1]*25/27+prices[i]*2/27);}
+  const difArr=ema12.map((v,i)=>v-ema26[i]), deaArr=[difArr[0]];
+  for(let i=1;i<difArr.length;i++) deaArr.push(deaArr[i-1]*8/10+difArr[i]*2/10);
+  const macdArr=difArr.map((v,i)=>(v-deaArr[i])*2);
+  return [difArr,deaArr,macdArr];
+}
+
+function calcIndicators(){
+  ma5=calcMA(allClose,5); ma10=calcMA(allClose,10); ma20=calcMA(allClose,20); ma60=calcMA(allClose,60);
+  volumeMa5=calcMA(allVolume,5); volumeMa10=calcMA(allVolume,10);
+  amountMa5=calcMA(allAmount,5); amountMa10=calcMA(allAmount,10);
+  rsi6=calcRSI(allClose,6); rsi12=calcRSI(allClose,12); rsi24=calcRSI(allClose,24);
+  const kdj=calcKDJ(allHigh,allLow,allClose); k=kdj[0]; d=kdj[1]; j=kdj[2];
+  const macd=calcMACD(allClose); dif=macd[0]; dea=macd[1]; macd=macd[2];
+}
+
+/* ============ 绘制 ============ */
+function getVisibleSlice(arr,s,e){return arr.slice(s,e);}
+
+function drawAll(){
+  const totalPixels=canvasK.width-60;
+  const startIdx=Math.floor((leftSliderX-30)/totalPixels*totalDays);
+  const endIdx=Math.floor((rightSliderX-30)/totalPixels*totalDays);
+  const s=Math.max(0,Math.min(startIdx,totalDays-1));
+  const e=Math.max(s+1,Math.min(endIdx+1,totalDays));
+  currentDates=allDates.slice(s,e);
+  currentOpen=allOpen.slice(s,e);
+  currentClose=allClose.slice(s,e);
+  currentHigh=allHigh.slice(s,e);
+  currentLow=allLow.slice(s,e);
+  currentVolume=allVolume.slice(s,e);
+  currentAmount=allAmount.slice(s,e);
+  currentChartData=currentKlineData.slice(s,e);
+
+  drawKline(s,e);
+  const indicator=document.querySelector('input[name="indicator"]:checked').value;
+  currentIndicator=indicator;
+  drawIndicator(indicator,s,e);
+  drawTimeline();
+}
+
+function drawKline(startIdx,endIdx){
+  const w=canvasK.width, h=canvasK.height;
+  ctxK.clearRect(0,0,w,h);
+  const pad={top:20,bottom:20,left:30,right:30};
+  const chartW=w-pad.left-pad.right, chartH=h-pad.top-pad.bottom;
+  const n=endIdx-startIdx;
+  if(n<2) return;
+
+  // 计算价格范围
+  let maxPrice=Math.max(...currentHigh), minPrice=Math.min(...currentLow);
+  const padding=(maxPrice-minPrice)*0.08||1;
+  maxPrice+=padding; minPrice-=padding;
+  const priceRange=maxPrice-minPrice;
+
+  const candleW=Math.max(2,Math.min(8,chartW/n*0.7));
+  const gap=chartW/n;
+
+  // 绘制网格
+  ctxK.strokeStyle='#e5e7eb'; ctxK.lineWidth=0.5;
+  for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxK.beginPath();ctxK.moveTo(pad.left,y);ctxK.lineTo(w-pad.right,y);ctxK.stroke();}
+  // 价格标签
+  ctxK.fillStyle='#9ca3af'; ctxK.font='10px sans-serif'; ctxK.textAlign='right';
+  for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;const v=maxPrice-priceRange*i/4;ctxK.fillText(v.toFixed(2),pad.left-4,y+3);}
+
+  // 绘制K线
+  currentChartData.forEach((line,i)=>{
+    const x=pad.left+i*gap+candleW/2;
+    const o=currentOpen[i], c=currentClose[i], h=currentHigh[i], l=currentLow[i];
+    const yHigh=pad.top+(maxPrice-h)/priceRange*chartH;
+    const yLow=pad.top+(maxPrice-l)/priceRange*chartH;
+    const yOpen=pad.top+(maxPrice-o)/priceRange*chartH;
+    const yClose=pad.top+(maxPrice-c)/priceRange*chartH;
+    const isUp=c>=o;
+    ctxK.strokeStyle=isUp?'#e63946':'#2f9e6f';
+    ctxK.fillStyle=isUp?'#e63946':'#2f9e6f';
+    ctxK.lineWidth=1;
+    // 影线
+    ctxK.beginPath();ctxK.moveTo(x,yHigh);ctxK.lineTo(x,yLow);ctxK.stroke();
+    // 实体
+    const top=Math.min(yOpen,yClose), bot=Math.max(yOpen,yClose);
+    const realW=Math.max(1,candleW*0.8);
+    if(bot-top<1){ctxK.fillRect(x-realW/2,top,realW,1);}
+    else{ctxK.fillRect(x-realW/2,top,realW,bot-top);}
+  });
+
+  // 绘制均线
+  const maColors=[['#3b82f6','MA5'],['#f97316','MA10'],['#8b5cf6','MA20'],['#6b7280','MA60']];
+  const maArrays=[ma5,ma10,ma20,ma60];
+  maColors.forEach(([color,_],mi)=>{
+    const arr=maArrays[mi];
+    ctxK.strokeStyle=color; ctxK.lineWidth=1.2;
+    ctxK.beginPath();
+    let started=false;
+    for(let i=0;i<n;i++){
+      const idx=startIdx+i;
+      const v=arr[idx];
+      if(v===null||v===undefined) continue;
+      const x=pad.left+i*gap+candleW/2;
+      const y=pad.top+(maxPrice-v)/priceRange*chartH;
+      if(!started){ctxK.moveTo(x,y);started=true;}else{ctxK.lineTo(x,y);}
+    }
+    ctxK.stroke();
+  });
+}
+
+function drawIndicator(indicator,startIdx,endIdx){
+  const w=canvasI.width, h=canvasI.height;
+  ctxI.clearRect(0,0,w,h);
+  const pad={top:10,bottom:15,left:30,right:30};
+  const chartW=w-pad.left-pad.right, chartH=h-pad.top-pad.bottom;
+  const n=endIdx-startIdx;
+  if(n<2) return;
+  const gap=chartW/n;
+
+  if(indicator==='成交量'||indicator==='成交额'){
+    const isVolume=indicator==='成交量';
+    const dataArr=isVolume?currentVolume:currentAmount;
+    const maArr5=isVolume?volumeMa5:amountMa5;
+    const maArr10=isVolume?volumeMa10:amountMa10;
+    const maxVal=Math.max(...dataArr)*1.1||1;
+
+    ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(0),pad.left-4,y+3);}
+
+    dataArr.forEach((v,i)=>{
+      const x=pad.left+i*gap;
+      const barH=v/maxVal*chartH;
+      const y=pad.top+chartH-barH;
+      ctxI.fillStyle=v>0?'#e63946':'#2f9e6f';
+      ctxI.fillRect(x,y,Math.max(1,gap*0.7),barH);
+    });
+    // 均量线
+    ctxI.strokeStyle='#3b82f6'; ctxI.lineWidth=1; ctxI.beginPath();
+    let started=false;
+    for(let i=0;i<n;i++){const idx=startIdx+i;const v=maArr5[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-v/maxVal*chartH;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+    ctxI.stroke();
+    ctxI.strokeStyle='#f97316'; ctxI.lineWidth=1; ctxI.beginPath();
+    started=false;
+    for(let i=0;i<n;i++){const idx=startIdx+i;const v=maArr10[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-v/maxVal*chartH;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+    ctxI.stroke();
+  }else if(indicator==='RSI'){
+    const rsiData=[rsi6,rsi12,rsi24]; const colors=['#e63946','#3b82f6','#2f9e6f']; const labels=['RSI6','RSI12','RSI24'];
+    ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
+    for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
+    ctxI.fillText('100',pad.left-4,pad.top+10);ctxI.fillText('50',pad.left-4,pad.top+chartH/2+3);ctxI.fillText('0',pad.left-4,pad.top+chartH+3);
+    rsiData.forEach((arr,mi)=>{
+      ctxI.strokeStyle=colors[mi]; ctxI.lineWidth=1.2; ctxI.beginPath();
+      let started=false;
+      for(let i=0;i<n;i++){const idx=startIdx+i;const v=arr[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-(v/100*chartH);if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+      ctxI.stroke();
+    });
+  }else if(indicator==='KDJ'){
+    const kdjData=[k,d,j]; const colors=['#e63946','#3b82f6','#2f9e6f']; const labels=['K','D','J'];
+    ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
+    for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
+    ctxI.fillText('100',pad.left-4,pad.top+10);ctxI.fillText('50',pad.left-4,pad.top+chartH/2+3);ctxI.fillText('0',pad.left-4,pad.top+chartH+3);
+    kdjData.forEach((arr,mi)=>{
+      ctxI.strokeStyle=colors[mi]; ctxI.lineWidth=1.2; ctxI.beginPath();
+      let started=false;
+      for(let i=0;i<n;i++){const idx=startIdx+i;const v=arr[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-(v/100*chartH);if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+      ctxI.stroke();
+    });
+  }else if(indicator==='MACD'){
+    const difSlice=dif.slice(startIdx,endIdx);
+    const deaSlice=dea.slice(startIdx,endIdx);
+    const macdSlice=macd.slice(startIdx,endIdx);
+    const maxVal=Math.max(...macdSlice.map(Math.abs))*1.5||1;
+    ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(1),pad.left-4,y+3);}
+    macdSlice.forEach((v,i)=>{
+      const x=pad.left+i*gap;const barH=Math.abs(v)/maxVal*chartH;const y=v>=0?pad.top+chartH/2-barH:pad.top+chartH/2;
+      ctxI.fillStyle=v>=0?'#e63946':'#2f9e6f';ctxI.fillRect(x,y,Math.max(1,gap*0.6),Math.max(1,barH));
+    });
+    ctxI.strokeStyle='#3b82f6'; ctxI.lineWidth=1.2; ctxI.beginPath();
+    let started=false;
+    for(let i=0;i<difSlice.length;i++){const x=pad.left+i*gap;const y=pad.top+chartH/2-difSlice[i]/maxVal*chartH/2;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+    ctxI.stroke();
+    ctxI.strokeStyle='#f97316'; ctxI.lineWidth=1.2; ctxI.beginPath();
+    started=false;
+    for(let i=0;i<deaSlice.length;i++){const x=pad.left+i*gap;const y=pad.top+chartH/2-deaSlice[i]/maxVal*chartH/2;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
+    ctxI.stroke();
+  }
+}
+
+function drawTimeline(){
+  const w=canvasT.width, h=canvasT.height;
+  ctxT.clearRect(0,0,w,h);
+  const pad={left:30,right:30};
+  const chartW=w-pad.left-pad.right;
+  ctxT.fillStyle='#f5f6f8'; ctxT.fillRect(0,0,w,h);
+  // 滑块轨道
+  ctxT.fillStyle='#e5e7eb'; ctxT.fillRect(pad.left,h/2-3,chartW,6);
+  ctxT.fillStyle='#d1d5db'; ctxT.fillRect(pad.left,h/2-3,(rightSliderX-pad.left),6);
+  // 左滑块
+  ctxT.fillStyle='#6b7280'; ctxT.beginPath(); ctxT.arc(leftSliderX,h/2,7,0,Math.PI*2); ctxT.fill();
+  // 右滑块
+  ctxT.fillStyle='#e63946'; ctxT.beginPath(); ctxT.arc(rightSliderX,h/2,7,0,Math.PI*2); ctxT.fill();
+  // 日期标签
+  if(totalDays>0){
+    ctxT.fillStyle='#9ca3af'; ctxT.font='9px sans-serif'; ctxT.textAlign='center';
+    ctxT.fillText(allDates[0]||'',pad.left+10,h-4);
+    ctxT.fillText(allDates[totalDays-1]||'',w-pad.right-10,h-4);
+  }
+  // 滑块拖拽
+  canvasT.onmousedown=e=>{
+    const rect=canvasT.getBoundingClientRect();
+    const mx=e.clientX-rect.left;
+    const scale=canvasT.width/rect.width;
+    const cx=mx*scale;
+    if(Math.abs(cx-leftSliderX)<15){draggingSlider='left';e.preventDefault();}
+    else if(Math.abs(cx-rightSliderX)<15){draggingSlider='right';e.preventDefault();}
+  };
+  canvasT.onmousemove=e=>{
+    if(!draggingSlider) return;
+    const rect=canvasT.getBoundingClientRect();
+    const mx=e.clientX-rect.left;
+    const scale=canvasT.width/rect.width;
+    let cx=Math.max(30,Math.min(canvasT.width-30,mx*scale));
+    if(draggingSlider==='left'){if(cx<rightSliderX-20)leftSliderX=cx;}
+    else if(draggingSlider==='right'){if(cx>leftSliderX+20)rightSliderX=cx;}
+    drawAll();
+  };
+  canvasT.onmouseup=()=>{draggingSlider=null;};
+  canvasT.onmouseleave=()=>{draggingSlider=null;};
+}
+
+/* ============ K线类型/指标切换 ============ */
+$$('input[name="ktype"]').forEach(r=>r.addEventListener('change',()=>{if(chartCode)loadChart();}));
+$$('input[name="indicator"]').forEach(r=>r.addEventListener('change',()=>{if(currentKlineData.length)drawAll();}));
+
+/* ============ 导出 ============ */
+$('#btnExport').addEventListener('click',async()=>{
+  if(!stockData.length)return;
+  try{
+    const r=await fetch('/api/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:stockData,type:'股票'})});
+    if(!r.ok){const e=await r.json();alert('导出失败: '+(e.error||''));return;}
+    const blob=await r.blob();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='证券筛选表.xlsx';a.click();
+    URL.revokeObjectURL(a.href);
+  }catch(e){alert('导出异常: '+e);}
+});
+
+/* ============ 启动 ============ */
+initCanvas();
+loadData();
+// 如果localStorage有选中的股票，自动选中
+const preselected=localStorage.getItem('stockSelectedCode');
+if(preselected){
+  const found=stockData.find(s=>s['证券代码']===preselected);
+  if(found) selectStock(found);
+  localStorage.removeItem('stockSelectedCode');
+}
+</script>
+</body>
+</html>

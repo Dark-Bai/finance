@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+dist/
+build/
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+.next/
+coverage/
+# DuckDB数据库文件
+instance/stock_data.duckdb
+*.duckdb.wal
+__pycache__/
+temp_file__/

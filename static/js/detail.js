@@ -305,32 +305,61 @@ function updateChartsFromSlider() {
 // =========================== 【绘图函数】 ===========================
 function drawKline() {
     if (!ctxKline) return;
-    ctxKline.clearRect(0, 0, 970, 300);
+    const w = 970, h = 300;
+    ctxKline.clearRect(0, 0, w, h);
     if (currentOpen.length === 0) return;
 
     const n = currentOpen.length;
-    const barWidth = 970 / n * 0.8;
-    const barSpacing = 970 / n * 0.2;
+    const pad = {top: 20, bottom: 20, left: 30, right: 30};
+    const chartW = w - pad.left - pad.right;
+    const chartH = h - pad.top - pad.bottom;
+    const gap = chartW / n;
+    const candleW = Math.max(2, Math.min(10, gap * 0.6));
     const minPrice = Math.min(...currentLow);
     const maxPrice = Math.max(...currentHigh);
-    const priceRange = maxPrice - minPrice || 1;
+    const padding = (maxPrice - minPrice) * 0.08 || 1;
+    const pMin = minPrice - padding;
+    const pMax = maxPrice + padding;
+    const priceRange = pMax - pMin;
+
+    // 绘制网格（水平）
+    ctxKline.strokeStyle = '#e5e7eb';
+    ctxKline.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+        const y = pad.top + chartH * i / 4;
+        ctxKline.beginPath();
+        ctxKline.moveTo(pad.left, y);
+        ctxKline.lineTo(w - pad.right, y);
+        ctxKline.stroke();
+    }
+
+    // 右侧价格轴标签
+    ctxKline.fillStyle = '#9ca3af';
+    ctxKline.font = '10px sans-serif';
+    ctxKline.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const y = pad.top + chartH * i / 4;
+        const v = pMax - priceRange * i / 4;
+        ctxKline.fillText(v.toFixed(2), w - pad.right + 2, y + 3);
+    }
 
     // 绘制均线
     const maData = [ma5, ma10, ma20, ma60];
-    const maColors = ['blue', 'orange', 'purple', 'green'];
+    const maColors = ['#3b82f6', '#f97316', '#8b5cf6', '#6b7280'];
+    const maLabels = ['MA5', 'MA10', 'MA20', 'MA60'];
     for (let mi = 0; mi < 4; mi++) {
         const arr = maData[mi];
         ctxKline.beginPath();
         ctxKline.strokeStyle = maColors[mi];
-        ctxKline.lineWidth = 1;
+        ctxKline.lineWidth = 1.2;
         let first = true;
         for (let i = 0; i < n; i++) {
             const fullIdx = allDates.indexOf(currentDates[i]);
             if (fullIdx === -1) continue;
             const val = arr[fullIdx];
             if (val === null || val === undefined) continue;
-            const x = i * (barWidth + barSpacing) + barWidth/2;
-            const y = 300 - ((val - minPrice) / priceRange * 300 * 0.9 + 300 * 0.05);
+            const x = pad.left + i * gap + candleW / 2;
+            const y = pad.top + (pMax - val) / priceRange * chartH;
             if (first) {
                 ctxKline.moveTo(x, y);
                 first = false;
@@ -341,111 +370,145 @@ function drawKline() {
         ctxKline.stroke();
     }
 
+    // 均线图例（左上角）
+    const legendY = pad.top + 2;
+    maColors.forEach((color, mi) => {
+        const idx = allDates.indexOf(currentDates[currentDates.length - 1]);
+        const v = maData[mi][idx];
+        if (v === null || v === undefined) return;
+        const lx = pad.left + mi * 70;
+        ctxKline.fillStyle = color;
+        ctxKline.font = 'bold 11px sans-serif';
+        ctxKline.textAlign = 'left';
+        ctxKline.fillText(maLabels[mi] + ':' + v.toFixed(2), lx, legendY + 12);
+    });
+
     // 绘制K线
     for (let i = 0; i < n; i++) {
-        const xCenter = i * (barWidth + barSpacing) + barWidth/2;
-        const xLeft = xCenter - barWidth/2;
-        const xRight = xCenter + barWidth/2;
+        const xCenter = pad.left + i * gap + candleW / 2;
+        const xLeft = xCenter - candleW / 2;
+        const xRight = xCenter + candleW / 2;
         const open = currentOpen[i];
         const close = currentClose[i];
         const high = currentHigh[i];
         const low = currentLow[i];
 
-        const openY = 300 - ((open - minPrice) / priceRange * 300 * 0.9 + 300 * 0.05);
-        const closeY = 300 - ((close - minPrice) / priceRange * 300 * 0.9 + 300 * 0.05);
-        const highY = 300 - ((high - minPrice) / priceRange * 300 * 0.9 + 300 * 0.05);
-        const lowY = 300 - ((low - minPrice) / priceRange * 300 * 0.9 + 300 * 0.05);
+        const highY = pad.top + (pMax - high) / priceRange * chartH;
+        const lowY = pad.top + (pMax - low) / priceRange * chartH;
+        const openY = pad.top + (pMax - open) / priceRange * chartH;
+        const closeY = pad.top + (pMax - close) / priceRange * chartH;
 
-        const color = close >= open ? 'red' : 'green';
-        ctxKline.fillStyle = color;
+        const isUp = close >= open;
+        const color = isUp ? '#e63946' : '#2f9e6f';
+
+        // 影线
         ctxKline.strokeStyle = color;
-        ctxKline.lineWidth = 1;
-
-        // 绘制影线
+        ctxKline.lineWidth = 0.8;
         ctxKline.beginPath();
         ctxKline.moveTo(xCenter, highY);
         ctxKline.lineTo(xCenter, lowY);
         ctxKline.stroke();
 
-        // 绘制实体（处理十字星、一字板等情况）
-        if (Math.abs(close - open) < 0.0001) {
-            // 开盘价等于收盘价：画一条水平横线
-            ctxKline.beginPath();
-            ctxKline.moveTo(xLeft, closeY);
-            ctxKline.lineTo(xRight, closeY);
-            ctxKline.stroke();
+        // 实体
+        const top = Math.min(openY, closeY);
+        const bot = Math.max(openY, closeY);
+        ctxKline.fillStyle = color;
+        const realW = Math.max(1, candleW * 0.8);
+        if (bot - top < 1) {
+            ctxKline.fillRect(xCenter - realW / 2, top, realW, 1);
         } else {
-            // 正常实体
-            ctxKline.fillRect(xLeft, Math.min(openY, closeY), barWidth, Math.abs(closeY - openY));
+            ctxKline.fillRect(xCenter - realW / 2, top, realW, bot - top);
         }
     }
-
-    // 绘制价格刻度
-    ctxKline.fillStyle = 'black';
-    ctxKline.font = '12px Arial';
-    ctxKline.fillText(minPrice.toFixed(2), 10, 300-10);
-    ctxKline.fillText(maxPrice.toFixed(2), 10, 20);
 }
 
 function drawIndicator() {
     if (!ctxIndicator) return;
-    ctxIndicator.clearRect(0, 0, 970, 120);
+    const w = 970, h = 120;
+    ctxIndicator.clearRect(0, 0, w, h);
     const indicatorType = document.querySelector('input[name="indicator"]:checked').value;
     const n = currentOpen.length;
     if (n === 0) return;
 
-    const barWidth = 970 / n * 0.8;
-    const barSpacing = 970 / n * 0.2;
+    const pad = {top: 10, bottom: 15, left: 30, right: 30};
+    const chartW = w - pad.left - pad.right;
+    const chartH = h - pad.top - pad.bottom;
+    const gap = chartW / n;
+    const candleW = Math.max(2, Math.min(10, gap * 0.6));
+
+    // 统一网格线
+    ctxIndicator.strokeStyle = '#e5e7eb';
+    ctxIndicator.lineWidth = 0.5;
+    for (let i = 0; i <= 2; i++) {
+        const y = pad.top + chartH * i / 2;
+        ctxIndicator.beginPath();
+        ctxIndicator.moveTo(pad.left, y);
+        ctxIndicator.lineTo(w - pad.right, y);
+        ctxIndicator.stroke();
+    }
 
     if (indicatorType === '成交量') {
         const maxVol = Math.max(...currentVolume);
         for (let i = 0; i < n; i++) {
-            const xCenter = i * (barWidth + barSpacing) + barWidth/2;
-            const xLeft = xCenter - barWidth/2;
-            const xRight = xCenter + barWidth/2;
-            const vol = currentVolume[i];
-            const height = (vol / maxVol) * 120 * 0.9;
-            const color = currentClose[i] >= currentOpen[i] ? 'red' : 'green';
-            ctxIndicator.fillStyle = color;
-            ctxIndicator.fillRect(xLeft, 120 - height, barWidth, height);
+            const x = pad.left + i * gap;
+            const barH = (currentVolume[i] / maxVol) * chartH;
+            const y = pad.top + chartH - barH;
+            ctxIndicator.fillStyle = currentClose[i] >= currentOpen[i] ? '#e63946' : '#2f9e6f';
+            ctxIndicator.fillRect(x, y, Math.max(1, gap * 0.7), barH);
         }
         // 刻度
-        ctxIndicator.fillStyle = 'black';
-        ctxIndicator.font = '12px Arial';
-        ctxIndicator.fillText(maxVol.toLocaleString(), 10, 20);
-        ctxIndicator.fillText('0', 10, 110);
+        ctxIndicator.fillStyle = '#9ca3af';
+        ctxIndicator.font = '10px sans-serif';
+        ctxIndicator.textAlign = 'right';
+        ctxIndicator.fillText(maxVol.toLocaleString(), w - pad.right + 2, pad.top + 12);
+        ctxIndicator.fillText('0', w - pad.right + 2, pad.top + chartH + 3);
     } else if (indicatorType === '成交额') {
         const maxAmt = Math.max(...currentAmount);
         for (let i = 0; i < n; i++) {
-            const xCenter = i * (barWidth + barSpacing) + barWidth/2;
-            const xLeft = xCenter - barWidth/2;
-            const xRight = xCenter + barWidth/2;
-            const amt = currentAmount[i];
-            const height = (amt / maxAmt) * 120 * 0.9;
-            const color = currentClose[i] >= currentOpen[i] ? 'red' : 'green';
-            ctxIndicator.fillStyle = color;
-            ctxIndicator.fillRect(xLeft, 120 - height, barWidth, height);
+            const x = pad.left + i * gap;
+            const barH = (currentAmount[i] / maxAmt) * chartH;
+            const y = pad.top + chartH - barH;
+            ctxIndicator.fillStyle = currentClose[i] >= currentOpen[i] ? '#e63946' : '#2f9e6f';
+            ctxIndicator.fillRect(x, y, Math.max(1, gap * 0.7), barH);
         }
-        ctxIndicator.fillStyle = 'black';
-        ctxIndicator.font = '12px Arial';
-        ctxIndicator.fillText((maxAmt/10).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '(万元)', 10, 20);
-        ctxIndicator.fillText('0', 10, 110);
+        ctxIndicator.fillStyle = '#9ca3af';
+        ctxIndicator.font = '10px sans-serif';
+        ctxIndicator.textAlign = 'right';
+        ctxIndicator.fillText((maxAmt/10).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '(万元)', w - pad.right + 2, pad.top + 12);
+        ctxIndicator.fillText('0', w - pad.right + 2, pad.top + chartH + 3);
     } else if (indicatorType === 'RSI') {
-        // 绘制RSI线
         const rsiData = [rsi6, rsi12, rsi24];
-        const colors = ['red', 'blue', 'green'];
+        const colors = ['#3b82f6', '#f97316', '#2f9e6f'];
+        // 20/50/80参考线
+        ctxIndicator.strokeStyle = '#d1d5db';
+        ctxIndicator.lineWidth = 0.5;
+        ctxIndicator.setLineDash([3, 3]);
+        [20, 50, 80].forEach(v => {
+            const y = pad.top + chartH - (v / 100 * chartH);
+            ctxIndicator.beginPath();
+            ctxIndicator.moveTo(pad.left, y);
+            ctxIndicator.lineTo(w - pad.right, y);
+            ctxIndicator.stroke();
+        });
+        ctxIndicator.setLineDash([]);
+        ctxIndicator.fillStyle = '#9ca3af';
+        ctxIndicator.font = '10px sans-serif';
+        ctxIndicator.textAlign = 'right';
+        ctxIndicator.fillText('80', w - pad.right + 2, pad.top + chartH * 0.2 + 3);
+        ctxIndicator.fillText('50', w - pad.right + 2, pad.top + chartH * 0.5 + 3);
+        ctxIndicator.fillText('20', w - pad.right + 2, pad.top + chartH * 0.8 + 3);
         for (let idx = 0; idx < 3; idx++) {
             ctxIndicator.beginPath();
             ctxIndicator.strokeStyle = colors[idx];
-            ctxIndicator.lineWidth = 1;
+            ctxIndicator.lineWidth = 1.2;
             let first = true;
             for (let i = 0; i < n; i++) {
                 const fullIdx = allDates.indexOf(currentDates[i]);
                 if (fullIdx === -1) continue;
                 const val = rsiData[idx][fullIdx];
                 if (val === null) continue;
-                const x = i * (barWidth + barSpacing) + barWidth/2;
-                const y = 120 - (val / 100 * 120 * 0.9 + 120 * 0.05);
+                const x = pad.left + i * gap;
+                const y = pad.top + chartH - (val / 100 * chartH);
                 if (first) {
                     ctxIndicator.moveTo(x, y);
                     first = false;
@@ -455,29 +518,40 @@ function drawIndicator() {
             }
             ctxIndicator.stroke();
         }
-        // 刻度
-        ctxIndicator.fillStyle = 'black';
-        ctxIndicator.font = '12px Arial';
-        ctxIndicator.fillText('100', 10, 20);
-        ctxIndicator.fillText('50', 10, 65);
-        ctxIndicator.fillText('0', 10, 110);
     } else if (indicatorType === 'KDJ') {
         const kdjData = [k, d, j];
-        const colors = ['red', 'blue', 'green'];
+        const colors = ['#3b82f6', '#f97316', '#8b5cf6'];
+        // 20/50/80参考线
+        ctxIndicator.strokeStyle = '#d1d5db';
+        ctxIndicator.lineWidth = 0.5;
+        ctxIndicator.setLineDash([3, 3]);
+        [20, 50, 80].forEach(v => {
+            const y = pad.top + chartH - (v / 100 * chartH);
+            ctxIndicator.beginPath();
+            ctxIndicator.moveTo(pad.left, y);
+            ctxIndicator.lineTo(w - pad.right, y);
+            ctxIndicator.stroke();
+        });
+        ctxIndicator.setLineDash([]);
+        ctxIndicator.fillStyle = '#9ca3af';
+        ctxIndicator.font = '10px sans-serif';
+        ctxIndicator.textAlign = 'right';
+        ctxIndicator.fillText('80', w - pad.right + 2, pad.top + chartH * 0.2 + 3);
+        ctxIndicator.fillText('50', w - pad.right + 2, pad.top + chartH * 0.5 + 3);
+        ctxIndicator.fillText('20', w - pad.right + 2, pad.top + chartH * 0.8 + 3);
         for (let idx = 0; idx < 3; idx++) {
             ctxIndicator.beginPath();
             ctxIndicator.strokeStyle = colors[idx];
-            ctxIndicator.lineWidth = 1;
+            ctxIndicator.lineWidth = 1.2;
             let first = true;
             for (let i = 0; i < n; i++) {
                 const fullIdx = allDates.indexOf(currentDates[i]);
                 if (fullIdx === -1) continue;
                 let val = kdjData[idx][fullIdx];
                 if (val === null) continue;
-                // 将 KDJ 值限制在 0-100 之间（避免计算误差）
                 val = Math.min(100, Math.max(0, val));
-                const x = i * (barWidth + barSpacing) + barWidth/2;
-                const y = 120 - (val / 100 * 120 * 0.9 + 120 * 0.05);
+                const x = pad.left + i * gap;
+                const y = pad.top + chartH - (val / 100 * chartH);
                 if (first) {
                     ctxIndicator.moveTo(x, y);
                     first = false;
@@ -487,13 +561,7 @@ function drawIndicator() {
             }
             ctxIndicator.stroke();
         }
-        ctxIndicator.fillStyle = 'black';
-        ctxIndicator.font = '12px Arial';
-        ctxIndicator.fillText('100', 10, 20);
-        ctxIndicator.fillText('50', 10, 65);
-        ctxIndicator.fillText('0', 10, 110);
     } else if (indicatorType === 'MACD') {
-        // 计算当前显示范围的MACD极值
         const difVals = [], deaVals = [], macdVals = [];
         for (let i = 0; i < n; i++) {
             const fullIdx = allDates.indexOf(currentDates[i]);
@@ -508,17 +576,31 @@ function drawIndicator() {
         const macdMax = Math.max(...allVals);
         const macdRange = macdMax - macdMin || 1;
 
-        // 绘制DIF
+        // MACD柱
+        for (let i = 0; i < n; i++) {
+            const fullIdx = allDates.indexOf(currentDates[i]);
+            if (fullIdx === -1) continue;
+            const val = macd[fullIdx];
+            if (val === null) continue;
+            const x = pad.left + i * gap;
+            const barH = Math.abs(val) / macdRange * chartH;
+            const y = val >= 0 ? pad.top + chartH / 2 - barH : pad.top + chartH / 2;
+            ctxIndicator.fillStyle = val >= 0 ? '#e63946' : '#2f9e6f';
+            ctxIndicator.fillRect(x, y, Math.max(1, gap * 0.6), Math.max(1, barH));
+        }
+
+        // DIF线
         ctxIndicator.beginPath();
-        ctxIndicator.strokeStyle = 'blue';
+        ctxIndicator.strokeStyle = '#3b82f6';
+        ctxIndicator.lineWidth = 1.2;
         let first = true;
         for (let i = 0; i < n; i++) {
             const fullIdx = allDates.indexOf(currentDates[i]);
             if (fullIdx === -1) continue;
             const val = dif[fullIdx];
             if (val === null) continue;
-            const x = i * (barWidth + barSpacing) + barWidth/2;
-            const y = 120 - ((val - macdMin) / macdRange * 120 * 0.9 + 120 * 0.05);
+            const x = pad.left + i * gap;
+            const y = pad.top + chartH / 2 - val / macdRange * chartH / 2;
             if (first) {
                 ctxIndicator.moveTo(x, y);
                 first = false;
@@ -528,17 +610,18 @@ function drawIndicator() {
         }
         ctxIndicator.stroke();
 
-        // 绘制DEA
+        // DEA线
         ctxIndicator.beginPath();
-        ctxIndicator.strokeStyle = 'orange';
+        ctxIndicator.strokeStyle = '#f97316';
+        ctxIndicator.lineWidth = 1.2;
         first = true;
         for (let i = 0; i < n; i++) {
             const fullIdx = allDates.indexOf(currentDates[i]);
             if (fullIdx === -1) continue;
             const val = dea[fullIdx];
             if (val === null) continue;
-            const x = i * (barWidth + barSpacing) + barWidth/2;
-            const y = 120 - ((val - macdMin) / macdRange * 120 * 0.9 + 120 * 0.05);
+            const x = pad.left + i * gap;
+            const y = pad.top + chartH / 2 - val / macdRange * chartH / 2;
             if (first) {
                 ctxIndicator.moveTo(x, y);
                 first = false;
@@ -548,76 +631,50 @@ function drawIndicator() {
         }
         ctxIndicator.stroke();
 
-        // 绘制MACD柱
-        for (let i = 0; i < n; i++) {
-            const fullIdx = allDates.indexOf(currentDates[i]);
-            if (fullIdx === -1) continue;
-            const val = macd[fullIdx];
-            if (val === null) continue;
-            const xCenter = i * (barWidth + barSpacing) + barWidth/2;
-            const xLeft = xCenter - barWidth/2;
-            const xRight = xCenter + barWidth/2;
-            const height = Math.abs(val) / macdRange * 120 * 0.9;
-            let yTop, yBottom, color;
-            if (val >= 0) {
-                yTop = 120/2 - height;
-                yBottom = 120/2;
-                color = 'red';
-            } else {
-                yTop = 120/2;
-                yBottom = 120/2 + height;
-                color = 'green';
-            }
-            ctxIndicator.fillStyle = color;
-            ctxIndicator.fillRect(xLeft, yTop, barWidth, yBottom - yTop);
-        }
-
-        ctxIndicator.fillStyle = 'black';
-        ctxIndicator.font = '12px Arial';
-        ctxIndicator.fillText(macdMax.toFixed(2), 10, 20);
-        ctxIndicator.fillText('0', 10, 65);
-        ctxIndicator.fillText(macdMin.toFixed(2), 10, 110);
+        // 刻度
+        ctxIndicator.fillStyle = '#9ca3af';
+        ctxIndicator.font = '10px sans-serif';
+        ctxIndicator.textAlign = 'right';
+        ctxIndicator.fillText(macdMax.toFixed(2), w - pad.right + 2, pad.top + 12);
+        ctxIndicator.fillText('0', w - pad.right + 2, pad.top + chartH / 2 + 3);
+        ctxIndicator.fillText(macdMin.toFixed(2), w - pad.right + 2, pad.top + chartH + 3);
     }
 }
 
 function drawTimeline() {
     if (!ctxTimeline) return;
-    ctxTimeline.clearRect(0, 0, 970, 50);
-    // 绘制轴线
+    const w = 970, h = 50;
+    ctxTimeline.clearRect(0, 0, w, h);
+    // 轨道
+    ctxTimeline.fillStyle = '#e5e7eb';
+    ctxTimeline.fillRect(30, h / 2 - 3, 910, 6);
+    ctxTimeline.fillStyle = '#d1d5db';
+    ctxTimeline.fillRect(30, h / 2 - 3, rightSliderX - 30, 6);
+    // 左滑块
+    ctxTimeline.fillStyle = '#6b7280';
     ctxTimeline.beginPath();
-    ctxTimeline.strokeStyle = 'black';
-    ctxTimeline.lineWidth = 2;
-    ctxTimeline.moveTo(30, 25);
-    ctxTimeline.lineTo(940, 25);
-    ctxTimeline.stroke();
-
+    ctxTimeline.arc(leftSliderX, h / 2, 7, 0, Math.PI * 2);
+    ctxTimeline.fill();
+    // 右滑块
+    ctxTimeline.fillStyle = '#e63946';
+    ctxTimeline.beginPath();
+    ctxTimeline.arc(rightSliderX, h / 2, 7, 0, Math.PI * 2);
+    ctxTimeline.fill();
     // 日期标签
-    ctxTimeline.font = '12px Arial';
-    ctxTimeline.fillStyle = 'black';
-    ctxTimeline.fillText(earliestDate, 20, 10);
-    ctxTimeline.fillText(latestDate, 900, 10);
-
-    // 滑块
-    ctxTimeline.fillStyle = 'blue';
-    ctxTimeline.fillRect(leftSliderX - 5, 15, 10, 20);
-    ctxTimeline.fillStyle = 'red';
-    ctxTimeline.fillRect(rightSliderX - 5, 15, 10, 20);
-
-    // 滑块日期标签
-    ctxTimeline.font = '12px Arial';
-    ctxTimeline.fillStyle = 'blue';
-    ctxTimeline.fillText(xToDate(leftSliderX), leftSliderX - 55, 47);
-    ctxTimeline.fillStyle = 'red';
-    ctxTimeline.fillText(xToDate(rightSliderX), rightSliderX - 5, 47);
+    ctxTimeline.fillStyle = '#9ca3af';
+    ctxTimeline.font = '9px sans-serif';
+    ctxTimeline.textAlign = 'center';
+    ctxTimeline.fillText(earliestDate || '', 40, h - 4);
+    ctxTimeline.fillText(latestDate || '', w - 40, h - 4);
 }
 
 function drawSecondTimeline() {
     if (!ctxSecondTimeline) return;
     ctxSecondTimeline.clearRect(0, 0, 970, 40);
     // 绘制轴线
+    ctxSecondTimeline.strokeStyle = '#e5e7eb';
+    ctxSecondTimeline.lineWidth = 1;
     ctxSecondTimeline.beginPath();
-    ctxSecondTimeline.strokeStyle = 'black';
-    ctxSecondTimeline.lineWidth = 2;
     ctxSecondTimeline.moveTo(10, 10);
     ctxSecondTimeline.lineTo(960, 10);
     ctxSecondTimeline.stroke();
@@ -626,6 +683,8 @@ function drawSecondTimeline() {
     const numSegments = 8;
     for (let i = 0; i <= numSegments; i++) {
         const x = 10 + i * 950 / numSegments;
+        ctxSecondTimeline.strokeStyle = '#e5e7eb';
+        ctxSecondTimeline.lineWidth = 1;
         ctxSecondTimeline.beginPath();
         ctxSecondTimeline.moveTo(x, 10);
         ctxSecondTimeline.lineTo(x, 15);
@@ -634,25 +693,22 @@ function drawSecondTimeline() {
         let idx = Math.floor(i / numSegments * (currentDates.length - 1));
         const rawDate = currentDates[idx];
         let displayDate = rawDate;
-        let offsetX = x - 30; // 默认八位数字偏移量（可根据需要调整）
+        let offsetX = x - 30;
 
-        // 判断首尾刻度并格式化
         if (i === 0) {
-            // 最左刻度：仅显示月份和日期（四位）
-            if (rawDate.length === 8) {
-                displayDate = rawDate.substring(4, 8); // MMDD
-            }
-            offsetX = x - 8; // 请手动调整此值至合适位置
-        } else if (i === numSegments) {
-            // 最右刻度：仅显示月份和日期（四位）
-            if (rawDate.length === 8) {
+            if (rawDate && rawDate.length === 8) {
                 displayDate = rawDate.substring(4, 8);
             }
-            offsetX = x - 22; // 请手动调整此值至合适位置
+            offsetX = x - 8;
+        } else if (i === numSegments) {
+            if (rawDate && rawDate.length === 8) {
+                displayDate = rawDate.substring(4, 8);
+            }
+            offsetX = x - 22;
         }
 
-        ctxSecondTimeline.fillStyle = 'black';
-        ctxSecondTimeline.font = '13px Arial';
+        ctxSecondTimeline.fillStyle = '#9ca3af';
+        ctxSecondTimeline.font = '10px sans-serif';
         ctxSecondTimeline.fillText(displayDate, offsetX, 30);
     }
 }
@@ -704,7 +760,7 @@ function handleMouseMove(e) {
     ctxKline.clearRect(0, 0, 970, 300);
     drawKline();
     ctxKline.beginPath();
-    ctxKline.strokeStyle = 'gray';
+    ctxKline.strokeStyle = '#6b7280';
     ctxKline.setLineDash([2, 2]);
     ctxKline.moveTo(xCenter, 0);
     ctxKline.lineTo(xCenter, 300);
@@ -715,7 +771,7 @@ function handleMouseMove(e) {
     ctxIndicator.clearRect(0, 0, 970, 120);
     drawIndicator();
     ctxIndicator.beginPath();
-    ctxIndicator.strokeStyle = 'gray';
+    ctxIndicator.strokeStyle = '#6b7280';
     ctxIndicator.setLineDash([2, 2]);
     ctxIndicator.moveTo(xCenter, 0);
     ctxIndicator.lineTo(xCenter, 120);
@@ -726,8 +782,8 @@ function handleMouseMove(e) {
     const fullIdx = allDates.indexOf(currentDates[dataIndex]);
     if (fullIdx !== -1) {
         const maVals = [ma5[fullIdx], ma10[fullIdx], ma20[fullIdx], ma60[fullIdx]];
-        const colors = ['blue', 'orange', 'purple', 'green'];
-        ctxKline.font = '12px Arial';
+        const colors = ['#3b82f6', '#f97316', '#8b5cf6', '#6b7280'];
+        ctxKline.font = '11px sans-serif';
         const xPositions = [400, 490, 580, 670];
         maVals.forEach((val, idx) => {
             if (val !== null) {
@@ -822,29 +878,49 @@ function handleMouseLeave(e) {
 }
 
 // =========================== 【滑块事件】 ===========================
-function handleTimelineMouseDown(e) {
+function getTimelineX(clientX) {
     const rect = canvasTimeline.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    // 检查是否点击左滑块
-    if (x >= leftSliderX - 5 && x <= leftSliderX + 5 && y >= 15 && y <= 35) {
+    const scaleX = 970 / rect.width; // 处理 canvas 缩放
+    return (clientX - rect.left) * scaleX;
+}
+
+function handleTimelineMouseDown(e) {
+    const x = getTimelineX(e.clientX);
+    const y = (e.clientY - canvasTimeline.getBoundingClientRect().top) * (50 / canvasTimeline.getBoundingClientRect().height);
+    const hitRadius = 12; // 增大点击区域
+
+    const distL = Math.abs(x - leftSliderX);
+    const distR = Math.abs(x - rightSliderX);
+
+    if (distL < hitRadius && y >= 5 && y <= 45) {
         draggingSlider = 'left';
-    } else if (x >= rightSliderX - 5 && x <= rightSliderX + 5 && y >= 15 && y <= 35) {
+    } else if (distR < hitRadius && y >= 5 && y <= 45) {
         draggingSlider = 'right';
     }
 }
 
 function handleTimelineMouseMove(e) {
-    if (!draggingSlider) return;
-    const rect = canvasTimeline.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    x = Math.max(30, Math.min(940, x));
-    if (draggingSlider === 'left') {
-        if (x > rightSliderX) x = rightSliderX;
-        leftSliderX = x;
+    const x = getTimelineX(e.clientX);
+    const y = (e.clientY - canvasTimeline.getBoundingClientRect().top) * (50 / canvasTimeline.getBoundingClientRect().height);
+    const hitRadius = 12;
+
+    // 悬停时改变光标样式
+    const distL = Math.abs(x - leftSliderX);
+    const distR = Math.abs(x - rightSliderX);
+    if ((distL < hitRadius && y >= 5 && y <= 45) || (distR < hitRadius && y >= 5 && y <= 45)) {
+        canvasTimeline.style.cursor = 'ew-resize';
     } else {
-        if (x < leftSliderX) x = leftSliderX;
-        rightSliderX = x;
+        canvasTimeline.style.cursor = 'default';
+    }
+
+    if (!draggingSlider) return;
+    let nx = Math.max(30, Math.min(940, x));
+    if (draggingSlider === 'left') {
+        if (nx > rightSliderX) nx = rightSliderX;
+        leftSliderX = nx;
+    } else {
+        if (nx < leftSliderX) nx = leftSliderX;
+        rightSliderX = nx;
     }
     drawTimeline();
 }
@@ -852,6 +928,56 @@ function handleTimelineMouseMove(e) {
 function handleTimelineMouseUp(e) {
     if (draggingSlider) {
         updateChartsFromSlider();
+        drawTimeline();
+        drawSecondTimeline();
+        drawKline();
+        drawIndicator();
+        draggingSlider = null;
+        canvasTimeline.style.cursor = 'default';
+    }
+}
+
+// =========================== 【触摸事件（移动端）】 ===========================
+function handleTimelineTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const x = getTimelineX(touch.clientX);
+    const y = (touch.clientY - canvasTimeline.getBoundingClientRect().top) * (50 / canvasTimeline.getBoundingClientRect().height);
+    const hitRadius = 16; // 触摸区域更大
+
+    const distL = Math.abs(x - leftSliderX);
+    const distR = Math.abs(x - rightSliderX);
+
+    if (distL < hitRadius && y >= 0 && y <= 50) {
+        draggingSlider = 'left';
+    } else if (distR < hitRadius && y >= 0 && y <= 50) {
+        draggingSlider = 'right';
+    }
+}
+
+function handleTimelineTouchMove(e) {
+    e.preventDefault();
+    if (!draggingSlider) return;
+    const touch = e.touches[0];
+    const x = getTimelineX(touch.clientX);
+    let nx = Math.max(30, Math.min(940, x));
+    if (draggingSlider === 'left') {
+        if (nx > rightSliderX) nx = rightSliderX;
+        leftSliderX = nx;
+    } else {
+        if (nx < leftSliderX) nx = leftSliderX;
+        rightSliderX = nx;
+    }
+    drawTimeline();
+}
+
+function handleTimelineTouchEnd(e) {
+    if (draggingSlider) {
+        updateChartsFromSlider();
+        drawTimeline();
+        drawSecondTimeline();
+        drawKline();
+        drawIndicator();
         draggingSlider = null;
     }
 }
@@ -912,15 +1038,28 @@ window.onload = async function() {
     // 加载初始数据 (日K)
     await loadKlineData('101');
 
-    // 绑定事件
+    // 绑定事件 - K线/指标悬停
     canvasKline.addEventListener('mousemove', handleMouseMove);
     canvasIndicator.addEventListener('mousemove', handleMouseMove);
     canvasKline.addEventListener('mouseleave', handleMouseLeave);
     canvasIndicator.addEventListener('mouseleave', handleMouseLeave);
+
+    // 绑定事件 - 时间轴滑块
     canvasTimeline.addEventListener('mousedown', handleTimelineMouseDown);
-    canvasTimeline.addEventListener('mousemove', handleTimelineMouseMove);
-    canvasTimeline.addEventListener('mouseup', handleTimelineMouseUp);
-    canvasTimeline.addEventListener('mouseleave', () => { if (draggingSlider) draggingSlider = null; });
+    // 使用 document 级别的 mousemove/mouseup 确保拖动时不会丢失事件
+    document.addEventListener('mousemove', handleTimelineMouseMove);
+    document.addEventListener('mouseup', handleTimelineMouseUp);
+    canvasTimeline.addEventListener('mouseleave', function(e) {
+        // 鼠标离开画布时重置光标，但不中断拖拽
+        if (!draggingSlider) {
+            canvasTimeline.style.cursor = 'default';
+        }
+    });
+
+    // 触摸事件支持（移动端）
+    canvasTimeline.addEventListener('touchstart', handleTimelineTouchStart, {passive: false});
+    document.addEventListener('touchmove', handleTimelineTouchMove, {passive: false});
+    document.addEventListener('touchend', handleTimelineTouchEnd);
 
     // K线类型切换
     document.querySelectorAll('input[name="kline_type"]').forEach(radio => {

@@ -1,215 +1,275 @@
+:root {
+  --bg: #f5f6f8;
+  --card: #fff;
+  --card-hi: #fdecec;
+  --border: #e5e7eb;
+  --fg: #1f2329;
+  --muted: #6b7280;
+  --dim: #9ca3af;
+  --red: #e63946;
+  --red-d: #c1121f;
+  --red-l: #fdecec;
+  --red-bd: #f3c4c7;
+  --ok: #2f9e6f;
+  --shadow: 0 1px 3px rgba(31,35,41,.04);
+}
+
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: 'Microsoft YaHei', sans-serif;
-    background: #f5f5f5;
-    padding: 20px;
+  font-family: 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
 }
 
 .detail-container {
-    position: relative;
-    width: 1300px;
-    height: 650px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 10px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  min-height: 100vh;
 }
 
-/* 信息面板 (右上角) */
-.info-panel {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    width: 240px;
-    height: 380px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    background: #f9f9f9;
-    overflow-y: auto;
-    z-index: 30;
-}
-
-.info-panel h3 {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.info-panel p {
-    font-size: 13px;
-    margin: 5px 0;
-}
-
-/* 基本面信息按钮 */
-.btn-fundamental {
-    position: absolute;
-    top: 430px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    z-index: 30;
-}
-
-.btn-fundamental:hover {
-    background: #0056b3;
-}
-
-/* AI分析按钮 */
-.btn-ai {
-    position: absolute;
-    top: 465px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    z-index: 30;
-}
-
-.btn-ai:hover {
-    background: #0056b3;
-}
-
-/* 工具箱按钮（新增） */
-.btn-toolbox {
-    position: absolute;
-    top: 500px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    z-index: 30;
-}
-
-.btn-toolbox:hover {
-    background: #0056b3;
-}
-
-/* 导出历史数据按钮 */
-.btn-export {
-    position: absolute;
-    top: 535px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    z-index: 30;
-}
-
-.btn-export:hover {
-    background: #0056b3;
-}
-
-/* 关闭按钮 */
-.btn-close {
-    position: absolute;
-    top: 570px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    z-index: 30;
-}
-
-.btn-close:hover {
-    background: #5a6268;
+.detail-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* K线类型与指标组合区域 */
 .kline-indicator-bar {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    width: 970px;
-    height: 45px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-    z-index: 30;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-shadow: var(--shadow);
 }
 
 .kline-type-selector,
 .indicator-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  flex-wrap: wrap;
 }
 
 .kline-type-selector .label,
 .indicator-selector .label {
-    font-weight: bold;
-    margin-right: 4px;
-    color: #333;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: 2px;
 }
 
 .kline-type-selector label,
 .indicator-selector label {
-    cursor: pointer;
-    white-space: nowrap;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-/* 画布通用样式 */
-canvas {
-    position: absolute;
-    border: 1px solid #ccc;
-    background: white;
-    z-index: 10;
+.kline-type-selector input[type=radio],
+.indicator-selector input[type=radio] {
+  margin: 0;
+  accent-color: var(--red);
 }
 
-#canvas-kline {
-    top: 80px;
-    left: 30px;
+/* 画布区域 */
+.chart-area {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+  position: relative;
 }
 
-#canvas-indicator {
-    top: 385px;
-    left: 30px;
+.chart-area canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 2px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
 }
 
-#canvas-second-timeline {
-    top: 510px;
-    left: 30px;
+.chart-area canvas:last-child {
+  margin-bottom: 0;
 }
 
-#canvas-timeline {
-    top: 560px;
-    left: 30px;
+/* 右侧：信息面板与操作按钮 */
+.detail-sidebar {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.info-panel h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--red-d);
+  margin-bottom: 10px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-panel p {
+  font-size: 13px;
+  color: var(--fg);
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.info-panel #hover-info {
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.info-panel #hover-info p {
+  margin: 4px 0;
+}
+
+.info-panel #hover-info hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+
+.info-panel #hover-info pre {
+  margin: 5px 0;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* 侧边栏按钮 */
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-buttons button {
+  width: 100%;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: .15s;
+  text-align: center;
+  background: #fff;
+  color: var(--fg);
+}
+
+.sidebar-buttons button:hover {
+  border-color: var(--red);
+  background: var(--red-l);
+}
+
+/* 主按钮（红色） */
+.btn-fundamental,
+.btn-ai,
+.btn-toolbox,
+.btn-export {
+  background: var(--red) !important;
+  border-color: var(--red) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+.btn-fundamental:hover,
+.btn-ai:hover,
+.btn-toolbox:hover,
+.btn-export:hover {
+  background: var(--red-d) !important;
+  border-color: var(--red-d) !important;
+}
+
+/* 关闭按钮 */
+.btn-close {
+  background: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #fff !important;
+}
+
+.btn-close:hover {
+  background: #5a6268 !important;
+  border-color: #5a6268 !important;
+}
+
+/* 响应式 */
+@media (max-width: 1100px) {
+  .detail-container {
+    flex-direction: column;
+  }
+  .detail-sidebar {
+    flex: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .info-panel {
+    flex: 1;
+    min-width: 260px;
+  }
+  .sidebar-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 260px;
+  }
+  .sidebar-buttons button {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 600px) {
+  .detail-container {
+    padding: 8px;
+  }
+  .kline-indicator-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .detail-sidebar {
+    flex-direction: column;
+  }
+  .sidebar-buttons {
+    flex-direction: column;
+  }
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>证券详情 - {{ name }} ({{ code }})</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}?v=2">
     <!-- SheetJS 库用于导出 xlsx -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -79,6 +79,6 @@
             exchange: "{{ exchange }}"
         };
     </script>
-    <script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/detail.js') }}?v=2"></script>
 </body>
 </html>

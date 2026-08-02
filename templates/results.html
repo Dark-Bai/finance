@@ -166,7 +166,9 @@ let amountMa5=[], amountMa10=[];
 let rsi6=[], rsi12=[], rsi24=[];
 let k=[], d=[], j=[];
 let dif=[], dea=[], macd=[];
-let mouseInChart=false, verticalLineKline=null, hoverInfo={};
+let crosshairX = null, crosshairY = null;
+let mouseInChart = false, mouseInIndicator = false;
+let crosshairDataIdx = -1;
 
 /* ============ 工具函数 ============ */
 const $=s=>document.querySelector(s);
@@ -290,6 +292,7 @@ function initCanvas(){
   }
   window.addEventListener('resize',resizeCanvas);
   resizeCanvas();
+  addMouseHandlers();
 }
 
 async function loadChart(){
@@ -455,6 +458,12 @@ function drawAll(){
   currentIndicator=indicator;
   drawIndicator(indicator,s,e);
   drawTimeline();
+
+  // 当无十字光标时，恢复header显示股票名称
+  if(crosshairX===null && selectedStock){
+    const nm=document.getElementById('chartStockName');
+    if(nm) nm.innerHTML='<span style="color:#e63946;">'+selectedStock['证券名称']+'</span>';
+  }
 }
 
 function drawKline(startIdx,endIdx){
@@ -471,35 +480,44 @@ function drawKline(startIdx,endIdx){
   maxPrice+=padding; minPrice-=padding;
   const priceRange=maxPrice-minPrice;
 
-  const candleW=Math.max(2,Math.min(8,chartW/n*0.7));
+  const candleW=Math.max(2,Math.min(10,chartW/n*0.6));
   const gap=chartW/n;
 
-  // 绘制网格
+  // 绘制网格（水平）
   ctxK.strokeStyle='#e5e7eb'; ctxK.lineWidth=0.5;
   for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxK.beginPath();ctxK.moveTo(pad.left,y);ctxK.lineTo(w-pad.right,y);ctxK.stroke();}
-  // 价格标签
+
+  // 右侧价格轴标签
   ctxK.fillStyle='#9ca3af'; ctxK.font='10px sans-serif'; ctxK.textAlign='right';
-  for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;const v=maxPrice-priceRange*i/4;ctxK.fillText(v.toFixed(2),pad.left-4,y+3);}
+  for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;const v=maxPrice-priceRange*i/4;ctxK.fillText(v.toFixed(2),w-pad.right+2,y+3);}
 
   // 绘制K线
+  const halfW=candleW/2;
   currentChartData.forEach((line,i)=>{
-    const x=pad.left+i*gap+candleW/2;
+    const x=pad.left+i*gap+halfW;
     const o=currentOpen[i], c=currentClose[i], h=currentHigh[i], l=currentLow[i];
     const yHigh=pad.top+(maxPrice-h)/priceRange*chartH;
     const yLow=pad.top+(maxPrice-l)/priceRange*chartH;
     const yOpen=pad.top+(maxPrice-o)/priceRange*chartH;
     const yClose=pad.top+(maxPrice-c)/priceRange*chartH;
     const isUp=c>=o;
-    ctxK.strokeStyle=isUp?'#e63946':'#2f9e6f';
-    ctxK.fillStyle=isUp?'#e63946':'#2f9e6f';
-    ctxK.lineWidth=1;
+
     // 影线
+    ctxK.strokeStyle=isUp?'#e63946':'#2f9e6f';
+    ctxK.lineWidth=0.8;
     ctxK.beginPath();ctxK.moveTo(x,yHigh);ctxK.lineTo(x,yLow);ctxK.stroke();
+
     // 实体
     const top=Math.min(yOpen,yClose), bot=Math.max(yOpen,yClose);
+    ctxK.fillStyle=isUp?'#e63946':'#2f9e6f';
+    ctxK.strokeStyle=isUp?'#e63946':'#2f9e6f';
+    ctxK.lineWidth=0.5;
     const realW=Math.max(1,candleW*0.8);
-    if(bot-top<1){ctxK.fillRect(x-realW/2,top,realW,1);}
-    else{ctxK.fillRect(x-realW/2,top,realW,bot-top);}
+    if(bot-top<1){
+      ctxK.fillRect(x-realW/2,top,realW,1);
+    }else{
+      ctxK.fillRect(x-realW/2,top,realW,bot-top);
+    }
   });
 
   // 绘制均线
@@ -514,12 +532,77 @@ function drawKline(startIdx,endIdx){
       const idx=startIdx+i;
       const v=arr[idx];
       if(v===null||v===undefined) continue;
-      const x=pad.left+i*gap+candleW/2;
+      const x=pad.left+i*gap+halfW;
       const y=pad.top+(maxPrice-v)/priceRange*chartH;
       if(!started){ctxK.moveTo(x,y);started=true;}else{ctxK.lineTo(x,y);}
     }
     ctxK.stroke();
   });
+
+  // 均线图例（左上角）
+  const legendY=pad.top+2;
+  maColors.forEach(([color,label],mi)=>{
+    const idx=endIdx-1;
+    const v=maArrays[mi][idx];
+    if(v===null||v===undefined) return;
+    const lx=pad.left+mi*70;
+    ctxK.fillStyle=color; ctxK.font='bold 11px sans-serif';
+    ctxK.textAlign='left';
+    ctxK.fillText(label+':'+v.toFixed(2),lx,legendY+12);
+  });
+
+  // 十字光标
+  if(crosshairX!==null && crosshairY!==null && n>0){
+    // 找到十字光标位置对应的数据索引
+    const dataIdx=Math.round((crosshairX-pad.left-halfW)/gap);
+    if(dataIdx>=0 && dataIdx<n){
+      crosshairDataIdx=dataIdx;
+      const x=pad.left+dataIdx*gap+halfW;
+      // 高亮该K线
+      const o=currentOpen[dataIdx], c=currentClose[dataIdx];
+      const isUp=c>=o;
+      ctxK.strokeStyle=isUp?'#e63946':'#2f9e6f';
+      ctxK.lineWidth=1.5;
+      ctxK.strokeRect(x-candleW*0.6,pad.top,candleW*1.2,chartH);
+
+      // 垂直虚线
+      ctxK.strokeStyle='#6b7280'; ctxK.lineWidth=1; ctxK.setLineDash([4,3]);
+      ctxK.beginPath();ctxK.moveTo(x,pad.top);ctxK.lineTo(x,pad.top+chartH);ctxK.stroke();
+      ctxK.setLineDash([]);
+
+      // 水平虚线
+      ctxK.strokeStyle='#6b7280'; ctxK.lineWidth=1; ctxK.setLineDash([4,3]);
+      ctxK.beginPath();ctxK.moveTo(pad.left,crosshairY);ctxK.lineTo(w-pad.right,crosshairY);ctxK.stroke();
+      ctxK.setLineDash([]);
+
+      // 十字交点小圆
+      ctxK.fillStyle='#6b7280';
+      ctxK.beginPath();ctxK.arc(x,crosshairY,3,0,Math.PI*2);ctxK.fill();
+
+      // 顶部日期标签
+      const dateStr=currentDates[dataIdx]||'';
+      ctxK.fillStyle='#1f2937'; ctxK.font='bold 10px sans-serif'; ctxK.textAlign='center';
+      ctxK.fillText(dateStr,x,pad.top-4);
+
+      // 右侧价格标签（水平线位置）
+      const priceVal=maxPrice-(crosshairY-pad.top)/chartH*priceRange;
+      ctxK.fillStyle='#1f2937'; ctxK.font='bold 10px sans-serif'; ctxK.textAlign='right';
+      ctxK.fillText(priceVal.toFixed(2),w-pad.right+2,crosshairY+3);
+
+      // 更新header信息
+      const hClose=currentClose[dataIdx], hOpen=currentOpen[dataIdx];
+      const hHigh=currentHigh[dataIdx], hLow=currentLow[dataIdx];
+      const upDown=hClose-hOpen;
+      const upDownPct=upDown/hOpen*100;
+      const nm=document.getElementById('chartStockName');
+      if(nm){
+        nm.innerHTML='<span style="color:'+(selectedStock?'#e63946':'#1f2937')+';">'+(selectedStock?selectedStock['证券名称']:'')+'</span> '+
+          ' <span style="font-size:12px;font-weight:400;color:'+(upDown>=0?'#e63946':'#2f9e6f')+'">'+
+          '开 '+hOpen.toFixed(2)+' 收 '+hClose.toFixed(2)+' 高 '+hHigh.toFixed(2)+' 低 '+hLow.toFixed(2)+
+          ' '+(upDown>=0?'+':'')+upDown.toFixed(2)+' ('+(upDown>=0?'+':'')+upDownPct.toFixed(2)+'%)</span>';
+      }
+    }
+  }
 }
 
 function drawIndicator(indicator,startIdx,endIdx){
@@ -538,11 +621,13 @@ function drawIndicator(indicator,startIdx,endIdx){
     const maArr10=isVolume?volumeMa10:amountMa10;
     const maxVal=Math.max(...dataArr)*1.1||1;
 
+    // 网格（3条水平线）
     ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
     for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
     ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
-    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(0),pad.left-4,y+3);}
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(0),w-pad.right+2,y+3);}
 
+    // 成交量柱（红涨绿跌）
     dataArr.forEach((v,i)=>{
       const x=pad.left+i*gap;
       const barH=v/maxVal*chartH;
@@ -550,21 +635,27 @@ function drawIndicator(indicator,startIdx,endIdx){
       ctxI.fillStyle=currentClose[i]>=currentOpen[i]?'#e63946':'#2f9e6f';
       ctxI.fillRect(x,y,Math.max(1,gap*0.7),barH);
     });
-    // 均量线
+    // MA5均量线（蓝）
     ctxI.strokeStyle='#3b82f6'; ctxI.lineWidth=1; ctxI.beginPath();
     let started=false;
     for(let i=0;i<n;i++){const idx=startIdx+i;const v=maArr5[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-v/maxVal*chartH;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
     ctxI.stroke();
+    // MA10均量线（橙）
     ctxI.strokeStyle='#f97316'; ctxI.lineWidth=1; ctxI.beginPath();
     started=false;
     for(let i=0;i<n;i++){const idx=startIdx+i;const v=maArr10[idx];if(v===null)continue;const x=pad.left+i*gap;const y=pad.top+chartH-v/maxVal*chartH;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
     ctxI.stroke();
   }else if(indicator==='RSI'){
-    const rsiData=[rsi6,rsi12,rsi24]; const colors=['#e63946','#3b82f6','#2f9e6f']; const labels=['RSI6','RSI12','RSI24'];
+    const rsiData=[rsi6,rsi12,rsi24]; const colors=['#3b82f6','#f97316','#2f9e6f']; const labels=['RSI6','RSI12','RSI24'];
+    // 网格（5条水平线）
     ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
     for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    // 20/50/80参考线
+    ctxI.strokeStyle='#d1d5db'; ctxI.lineWidth=0.5; ctxI.setLineDash([3,3]);
+    [20,50,80].forEach(v=>{const y=pad.top+chartH-(v/100*chartH);ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();});
+    ctxI.setLineDash([]);
     ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
-    ctxI.fillText('100',pad.left-4,pad.top+10);ctxI.fillText('50',pad.left-4,pad.top+chartH/2+3);ctxI.fillText('0',pad.left-4,pad.top+chartH+3);
+    ctxI.fillText('80',w-pad.right+2,pad.top+chartH*0.2+3);ctxI.fillText('50',w-pad.right+2,pad.top+chartH*0.5+3);ctxI.fillText('20',w-pad.right+2,pad.top+chartH*0.8+3);
     rsiData.forEach((arr,mi)=>{
       ctxI.strokeStyle=colors[mi]; ctxI.lineWidth=1.2; ctxI.beginPath();
       let started=false;
@@ -572,11 +663,16 @@ function drawIndicator(indicator,startIdx,endIdx){
       ctxI.stroke();
     });
   }else if(indicator==='KDJ'){
-    const kdjData=[k,d,j]; const colors=['#e63946','#3b82f6','#2f9e6f']; const labels=['K','D','J'];
+    const kdjData=[k,d,j]; const colors=['#3b82f6','#f97316','#8b5cf6']; const labels=['K','D','J'];
+    // 网格（5条水平线）
     ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
     for(let i=0;i<=4;i++){const y=pad.top+chartH*i/4;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
+    // 20/50/80参考线
+    ctxI.strokeStyle='#d1d5db'; ctxI.lineWidth=0.5; ctxI.setLineDash([3,3]);
+    [20,50,80].forEach(v=>{const y=pad.top+chartH-(v/100*chartH);ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();});
+    ctxI.setLineDash([]);
     ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
-    ctxI.fillText('100',pad.left-4,pad.top+10);ctxI.fillText('50',pad.left-4,pad.top+chartH/2+3);ctxI.fillText('0',pad.left-4,pad.top+chartH+3);
+    ctxI.fillText('80',w-pad.right+2,pad.top+chartH*0.2+3);ctxI.fillText('50',w-pad.right+2,pad.top+chartH*0.5+3);ctxI.fillText('20',w-pad.right+2,pad.top+chartH*0.8+3);
     kdjData.forEach((arr,mi)=>{
       ctxI.strokeStyle=colors[mi]; ctxI.lineWidth=1.2; ctxI.beginPath();
       let started=false;
@@ -588,18 +684,22 @@ function drawIndicator(indicator,startIdx,endIdx){
     const deaSlice=dea.slice(startIdx,endIdx);
     const macdSlice=macd.slice(startIdx,endIdx);
     const maxVal=Math.max(...macdSlice.map(Math.abs))*1.5||1;
+    // 网格（3条水平线）
     ctxI.strokeStyle='#e5e7eb'; ctxI.lineWidth=0.5;
     for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.beginPath();ctxI.moveTo(pad.left,y);ctxI.lineTo(w-pad.right,y);ctxI.stroke();}
     ctxI.fillStyle='#9ca3af'; ctxI.font='10px sans-serif'; ctxI.textAlign='right';
-    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(1),pad.left-4,y+3);}
+    for(let i=0;i<=2;i++){const y=pad.top+chartH*i/2;ctxI.fillText((maxVal-maxVal*i/2).toFixed(1),w-pad.right+2,y+3);}
+    // MACD柱（红涨绿跌）
     macdSlice.forEach((v,i)=>{
       const x=pad.left+i*gap;const barH=Math.abs(v)/maxVal*chartH;const y=v>=0?pad.top+chartH/2-barH:pad.top+chartH/2;
       ctxI.fillStyle=v>=0?'#e63946':'#2f9e6f';ctxI.fillRect(x,y,Math.max(1,gap*0.6),Math.max(1,barH));
     });
+    // DIF线（蓝）
     ctxI.strokeStyle='#3b82f6'; ctxI.lineWidth=1.2; ctxI.beginPath();
     let started=false;
     for(let i=0;i<difSlice.length;i++){const x=pad.left+i*gap;const y=pad.top+chartH/2-difSlice[i]/maxVal*chartH/2;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
     ctxI.stroke();
+    // DEA线（橙）
     ctxI.strokeStyle='#f97316'; ctxI.lineWidth=1.2; ctxI.beginPath();
     started=false;
     for(let i=0;i<deaSlice.length;i++){const x=pad.left+i*gap;const y=pad.top+chartH/2-deaSlice[i]/maxVal*chartH/2;if(!started){ctxI.moveTo(x,y);started=true;}else{ctxI.lineTo(x,y);}}
@@ -641,12 +741,48 @@ function drawTimeline(){
     const mx=e.clientX-rect.left;
     const scale=canvasT.width/rect.width;
     let cx=Math.max(30,Math.min(canvasT.width-30,mx*scale));
-    if(draggingSlider==='left'){if(cx<rightSliderX-20)leftSliderX=cx;}
-    else if(draggingSlider==='right'){if(cx>leftSliderX+20)rightSliderX=cx;}
+    if(draggingSlider==='left'){if(cx<rightSliderX-5)leftSliderX=cx;}
+    else if(draggingSlider==='right'){if(cx>leftSliderX+5)rightSliderX=cx;}
     drawAll();
   };
   canvasT.onmouseup=()=>{draggingSlider=null;};
   canvasT.onmouseleave=()=>{draggingSlider=null;};
+}
+
+/* ============ 十字光标交互 ============ */
+function addMouseHandlers() {
+  canvasK.onmousemove = function(e) {
+    const rect = canvasK.getBoundingClientRect();
+    const scaleX = canvasK.width / rect.width;
+    const scaleY = canvasK.height / rect.height;
+    crosshairX = (e.clientX - rect.left) * scaleX;
+    crosshairY = (e.clientY - rect.top) * scaleY;
+    mouseInChart = true;
+    drawAll();
+  };
+  canvasK.onmouseleave = function() {
+    mouseInChart = false;
+    crosshairX = null;
+    crosshairY = null;
+    crosshairDataIdx = -1;
+    drawAll();
+  };
+  canvasI.onmousemove = function(e) {
+    const rect = canvasI.getBoundingClientRect();
+    const scaleX = canvasI.width / rect.width;
+    const scaleY = canvasI.height / rect.height;
+    crosshairX = (e.clientX - rect.left) * scaleX;
+    crosshairY = (e.clientY - rect.top) * scaleY;
+    mouseInIndicator = true;
+    drawAll();
+  };
+  canvasI.onmouseleave = function() {
+    mouseInIndicator = false;
+    crosshairX = null;
+    crosshairY = null;
+    crosshairDataIdx = -1;
+    drawAll();
+  };
 }
 
 /* ============ K线类型/指标切换 ============ */

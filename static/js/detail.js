@@ -844,10 +844,10 @@ function handleTimelineMouseMove(e) {
     let x = (e.clientX - rect.left) * scaleT;
     x = Math.max(30, Math.min(940, x));
     if (draggingSlider === 'left') {
-        if (x > rightSliderX) x = rightSliderX;
+        if (x > rightSliderX - 5) x = rightSliderX - 5;
         leftSliderX = x;
     } else {
-        if (x < leftSliderX) x = leftSliderX;
+        if (x < leftSliderX + 5) x = leftSliderX + 5;
         rightSliderX = x;
     }
     drawTimeline();

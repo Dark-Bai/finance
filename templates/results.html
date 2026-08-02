@@ -284,8 +284,7 @@ function initCanvas(){
     canvasK.width=Math.max(400,w); canvasK.style.width=w+'px';
     canvasI.width=Math.max(400,w); canvasI.style.width=w+'px';
     canvasT.width=Math.max(400,w); canvasT.style.width=w+'px';
-    rightSliderX=canvasK.width-60;
-    if(rightSliderX<100) rightSliderX=canvasK.width-30;
+    rightSliderX=canvasK.width-30;
     if(currentKlineData.length) drawAll();
   }
   window.addEventListener('resize',resizeCanvas);
@@ -300,6 +299,15 @@ async function loadChart(){
   currentKtype=ktype;
   $('#chartHint').style.display='none';
   canvasK.style.display='block'; canvasI.style.display='block'; canvasT.style.display='block';
+  // 确保canvas尺寸正确（需在显示后重新计算）
+  const area=$('#chartArea');
+  const cw=area.clientWidth-20;
+  if(cw>=300){
+    canvasK.width=Math.max(400,cw); canvasK.style.width=cw+'px';
+    canvasI.width=Math.max(400,cw); canvasI.style.width=cw+'px';
+    canvasT.width=Math.max(400,cw); canvasT.style.width=cw+'px';
+    rightSliderX=canvasK.width-30;
+  }
   // 显示加载状态
   $('#chartStockName').innerHTML+=' <span class="loading" style="display:inline-block;width:10px;height:10px;border:2px solid var(--red-l);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:4px"></span>';
   try{
@@ -309,9 +317,9 @@ async function loadChart(){
     const d=await r.json();
     if(d.error||!d.klines||!d.klines.length){showChartError('获取K线数据失败: '+(d.error||'数据为空'));return;}
     currentKlineData=d.klines;
-    parseData();
-    calcIndicators();
-    drawAll();
+    try{parseData();}catch(e){showChartError('数据解析错误: '+e.message);return;}
+    try{calcIndicators();}catch(e){showChartError('指标计算错误: '+e.message);return;}
+    try{drawAll();}catch(e){showChartError('渲染错误: '+e.message);return;}
   }catch(e){showChartError('网络请求异常: '+e.message);}
   // 移除加载指示器
   const nm=$('#chartStockName');
@@ -337,20 +345,17 @@ function parseData(){
     allVolume.push(parseFloat(parts[5]));
     allAmount.push(parts[6]?parseFloat(parts[6]):0);
   });
-  // 限制数据量为最近365条，避免渲染性能问题
-  if(allDates.length>365){
-    const start=allDates.length-365;
-    allDates=allDates.slice(start);
-    allOpen=allOpen.slice(start);
-    allClose=allClose.slice(start);
-    allHigh=allHigh.slice(start);
-    allLow=allLow.slice(start);
-    allVolume=allVolume.slice(start);
-    allAmount=allAmount.slice(start);
-    currentKlineData=currentKlineData.slice(start);
-  }
   totalDays=allDates.length;
-  leftSliderX=30; rightSliderX=canvasK.width-60;
+  // 默认显示最近约180条（约6个月交易日），滑块可拖动查看全部历史
+  const defaultView=180;
+  const totalPixels=canvasK.width-60;
+  if(totalDays>defaultView){
+    leftSliderX=30+((totalDays-defaultView)/totalDays)*totalPixels;
+  }else{
+    leftSliderX=30;
+  }
+  rightSliderX=canvasK.width-30;
+  if(rightSliderX<60) rightSliderX=canvasK.width-30;
   updateVisibleRange();
 }
 
@@ -423,7 +428,7 @@ function calcIndicators(){
   amountMa5=calcMA(allAmount,5); amountMa10=calcMA(allAmount,10);
   rsi6=calcRSI(allClose,6); rsi12=calcRSI(allClose,12); rsi24=calcRSI(allClose,24);
   const kdj=calcKDJ(allHigh,allLow,allClose); k=kdj[0]; d=kdj[1]; j=kdj[2];
-  const macd=calcMACD(allClose); dif=macd[0]; dea=macd[1]; macd=macd[2];
+  const macdArr=calcMACD(allClose); dif=macdArr[0]; dea=macdArr[1]; macd=macdArr[2];
 }
 
 /* ============ 绘制 ============ */
@@ -541,7 +546,7 @@ function drawIndicator(indicator,startIdx,endIdx){
       const x=pad.left+i*gap;
       const barH=v/maxVal*chartH;
       const y=pad.top+chartH-barH;
-      ctxI.fillStyle=v>0?'#e63946':'#2f9e6f';
+      ctxI.fillStyle=currentClose[i]>=currentOpen[i]?'#e63946':'#2f9e6f';
       ctxI.fillRect(x,y,Math.max(1,gap*0.7),barH);
     });
     // 均量线

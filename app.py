@@ -2939,6 +2939,17 @@ def toolbox():
 
 # =========================== 【↑ Flask 路由 ↑】 ===========================
 
+# =========================== 【↓ THSDK 接口路由 ↓】 ===========================
+try:
+    from thsdk_routes import register_thsdk_routes
+    register_thsdk_routes(app)
+    print("✅ THSDK 接口路由注册成功")
+except ImportError as e:
+    print(f"⚠️ THSDK 路由注册失败（thsdk_routes.py 未找到）: {e}")
+except Exception as e:
+    print(f"⚠️ THSDK 路由注册异常: {e}")
+# =========================== 【↑ THSDK 接口路由 ↑】 ===========================
+
 
 
 

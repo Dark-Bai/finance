@@ -133,7 +133,10 @@
   .dsl-panel.on{display:block}
   .dsl-panel textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;color:var(--fg);font-size:13px;font-family:'Consolas',monospace;padding:10px;resize:vertical;min-height:80px;outline:none}
   .dsl-panel textarea:focus{border-color:var(--red)}
-  .dsl-sql{background:#fafbfc;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;font-family:'Consolas',monospace;color:var(--red-d);white-space:pre-wrap;word-break:break-all;margin-top:10px;min-height:40px}
+  .dsl-sql{background:#fafbfc;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;font-family:'Consolas',monospace;color:var(--red-d);white-space:pre-wrap;word-break:break-all;margin-top:10px;min-height:40px;max-height:240px;overflow-y:auto;overflow-x:auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.dsl-sql::-webkit-scrollbar{width:6px;height:6px}
+.dsl-sql::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.dsl-sql::-webkit-scrollbar-thumb:hover{background:#b0b4ba}
   .dsl-error{margin-top:10px;background:#fdecec;border:1px solid var(--red-bd);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--red-d)}
   .dsl-error .caret{margin-top:6px;font-family:'Consolas',monospace;font-size:12px;color:var(--red-d);background:#fff;border-radius:4px;padding:6px;overflow-x:auto;white-space:pre}
   .dsl-help{margin-top:12px;border:1px solid var(--border);border-radius:8px;background:#fafbfc;padding:14px 16px;font-size:13px;color:var(--fg)}
@@ -184,7 +187,10 @@
   .dsl-section-body .dsl-actions{display:flex;gap:6px;margin-top:6px;flex-shrink:0}
   .dsl-section-body .dsl-error,.dsl-section-body .dsl-sql{margin-top:6px;flex-shrink:0}
   .dsl-section-body .dsl-error{font-size:12px}
-  .dsl-section-body .dsl-sql{font-size:11px;color:var(--muted);background:#fafbfc;border-radius:4px;padding:4px 8px;white-space:pre-wrap;word-break:break-all}
+  .dsl-section-body .dsl-sql{font-size:11px;color:var(--muted);background:#fafbfc;border-radius:4px;padding:4px 8px;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow-y:auto;overflow-x:auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.dsl-section-body .dsl-sql::-webkit-scrollbar{width:6px;height:6px}
+.dsl-section-body .dsl-sql::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.dsl-section-body .dsl-sql::-webkit-scrollbar-thumb:hover{background:#b0b4ba}
 
   /* 整合子窗口 */
   .main-window{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,41,.04)}

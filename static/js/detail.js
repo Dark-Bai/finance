@@ -680,14 +680,16 @@ function handleMouseMove(e) {
         return;
     }
 
-    // 计算相对坐标
+    // 计算相对坐标（考虑画布缩放）
     let canvasX, canvasY;
     if (inKline) {
-        canvasX = mouseX - rectK.left;
-        canvasY = mouseY - rectK.top;
+        const scaleK = canvasKline.width / canvasKline.offsetWidth;
+        canvasX = (mouseX - rectK.left) * scaleK;
+        canvasY = (mouseY - rectK.top) * scaleK;
     } else {
-        canvasX = mouseX - rectI.left;
-        canvasY = mouseY - rectI.top;
+        const scaleI = canvasIndicator.width / canvasIndicator.offsetWidth;
+        canvasX = (mouseX - rectI.left) * scaleI;
+        canvasY = (mouseY - rectI.top) * scaleI;
     }
 
     const n = currentOpen.length;
@@ -824,7 +826,8 @@ function handleMouseLeave(e) {
 // =========================== 【滑块事件】 ===========================
 function handleTimelineMouseDown(e) {
     const rect = canvasTimeline.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const scaleT = canvasTimeline.width / canvasTimeline.offsetWidth;
+    const x = (e.clientX - rect.left) * scaleT;
     const y = e.clientY - rect.top;
     // 检查是否点击左滑块
     if (x >= leftSliderX - 5 && x <= leftSliderX + 5 && y >= 15 && y <= 35) {
@@ -837,7 +840,8 @@ function handleTimelineMouseDown(e) {
 function handleTimelineMouseMove(e) {
     if (!draggingSlider) return;
     const rect = canvasTimeline.getBoundingClientRect();
-    let x = e.clientX - rect.left;
+    const scaleT = canvasTimeline.width / canvasTimeline.offsetWidth;
+    let x = (e.clientX - rect.left) * scaleT;
     x = Math.max(30, Math.min(940, x));
     if (draggingSlider === 'left') {
         if (x > rightSliderX) x = rightSliderX;

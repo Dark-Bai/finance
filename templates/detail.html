@@ -10,64 +10,64 @@
 </head>
 <body>
     <div class="detail-container">
-        <!-- 基本信息区域 (右上角) 合并鼠标悬停信息和技术指标值 -->
-        <div class="info-panel" id="info-panel">
-            <h3>证券详情</h3>
-            <div id="security-info">
-                <p>证券名称: {{ name }}</p>
-                <p>证券代码: {{ code }}</p>
-                <p>证券种类: {{ sec_type }}</p>
-                <p>交易板块: {{ exchange }}</p>
+        <!-- 左侧：图表主区域 -->
+        <div class="detail-main">
+            <!-- K线类型与指标选择组合区域 -->
+            <div class="kline-indicator-bar">
+                <div class="kline-type-selector">
+                    <span class="label">K线类型：</span>
+                    <label><input type="radio" name="kline_type" value="日K" checked> 日K</label>
+                    <label><input type="radio" name="kline_type" value="周K"> 周K</label>
+                    <label><input type="radio" name="kline_type" value="月K"> 月K</label>
+                    <label><input type="radio" name="kline_type" value="5分钟"> 5分钟</label>
+                    <label><input type="radio" name="kline_type" value="15分钟"> 15分钟</label>
+                    <label><input type="radio" name="kline_type" value="30分钟"> 30分钟</label>
+                    <label><input type="radio" name="kline_type" value="60分钟"> 60分钟</label>
+                </div>
+                <div class="indicator-selector">
+                    <span class="label">技术指标：</span>
+                    <label><input type="radio" name="indicator" value="成交量" checked> 成交量</label>
+                    <label><input type="radio" name="indicator" value="成交额"> 成交额</label>
+                    <label><input type="radio" name="indicator" value="RSI"> RSI</label>
+                    <label><input type="radio" name="indicator" value="KDJ"> KDJ</label>
+                    <label><input type="radio" name="indicator" value="MACD"> MACD</label>
+                </div>
             </div>
-            <div id="hover-info" style="display: none;">
-                <!-- 鼠标悬停时动态填充交易数据 + 技术指标值 -->
-            </div>
-        </div>
-
-        <!-- 基本面信息按钮 -->
-        <button class="btn-fundamental" id="btn-fundamental">基本面信息</button>
-        <!-- AI分析按钮 -->
-        <button class="btn-ai" id="btn-ai">AI分析</button>
-        <!-- 工具箱按钮（新增） -->
-        <button class="btn-toolbox" id="btn-toolbox">工具箱</button>
-        <!-- 导出历史数据按钮 -->
-        <button class="btn-export" id="btn-export-history">导出历史数据</button>
-        <!-- 关闭按钮 (返回筛选页) -->
-        <button class="btn-close" id="btn-close-detail" onclick="window.location.href='/'">关闭</button>
-
-        <!-- K线类型与指标选择组合区域 (左上角) -->
-        <div class="kline-indicator-bar">
-            <div class="kline-type-selector">
-                <span class="label">K线类型：</span>
-                <label><input type="radio" name="kline_type" value="日K" checked> 日K</label>
-                <label><input type="radio" name="kline_type" value="周K"> 周K</label>
-                <label><input type="radio" name="kline_type" value="月K"> 月K</label>
-                <label><input type="radio" name="kline_type" value="5分钟"> 5分钟</label>
-                <label><input type="radio" name="kline_type" value="15分钟"> 15分钟</label>
-                <label><input type="radio" name="kline_type" value="30分钟"> 30分钟</label>
-                <label><input type="radio" name="kline_type" value="60分钟"> 60分钟</label>
-            </div>
-            <div class="indicator-selector">
-                <span class="label">技术指标：</span>
-                <label><input type="radio" name="indicator" value="成交量" checked> 成交量</label>
-                <label><input type="radio" name="indicator" value="成交额"> 成交额</label>
-                <label><input type="radio" name="indicator" value="RSI"> RSI</label>
-                <label><input type="radio" name="indicator" value="KDJ"> KDJ</label>
-                <label><input type="radio" name="indicator" value="MACD"> MACD</label>
+            <div class="chart-area">
+                <!-- K线图 Canvas -->
+                <canvas id="canvas-kline" width="970" height="300"></canvas>
+                <!-- 指标图 Canvas -->
+                <canvas id="canvas-indicator" width="970" height="120"></canvas>
+                <!-- 第二时间轴 Canvas (缩略时间轴) -->
+                <canvas id="canvas-second-timeline" width="970" height="40"></canvas>
+                <!-- 时间轴 Canvas (含滑块) -->
+                <canvas id="canvas-timeline" width="970" height="50"></canvas>
             </div>
         </div>
 
-        <!-- K线图 Canvas -->
-        <canvas id="canvas-kline" width="970" height="300"></canvas>
-
-        <!-- 指标图 Canvas -->
-        <canvas id="canvas-indicator" width="970" height="120"></canvas>
-
-        <!-- 第二时间轴 Canvas (缩略时间轴) -->
-        <canvas id="canvas-second-timeline" width="970" height="40"></canvas>
-
-        <!-- 时间轴 Canvas (含滑块) -->
-        <canvas id="canvas-timeline" width="970" height="50"></canvas>
+        <!-- 右侧：信息面板与操作按钮 -->
+        <div class="detail-sidebar">
+            <!-- 基本信息区域 -->
+            <div class="info-panel" id="info-panel">
+                <h3>证券详情</h3>
+                <div id="security-info">
+                    <p>证券名称: {{ name }}</p>
+                    <p>证券代码: {{ code }}</p>
+                    <p>证券种类: {{ sec_type }}</p>
+                    <p>交易板块: {{ exchange }}</p>
+                </div>
+                <div id="hover-info" style="display: none;">
+                    <!-- 鼠标悬停时动态填充交易数据 + 技术指标值 -->
+                </div>
+            </div>
+            <div class="sidebar-buttons">
+                <button class="btn-fundamental" id="btn-fundamental">基本面信息</button>
+                <button class="btn-ai" id="btn-ai">AI分析</button>
+                <button class="btn-toolbox" id="btn-toolbox">工具箱</button>
+                <button class="btn-export" id="btn-export-history">导出历史数据</button>
+                <button class="btn-close" id="btn-close-detail" onclick="window.location.href='/'">关闭</button>
+            </div>
+        </div>
     </div>
 
     <!-- 传递证券参数给 JavaScript -->

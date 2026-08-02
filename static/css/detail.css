@@ -1,4 +1,4 @@
-/* =========================== 【证券详情页 - 红白简约主题】 =========================== */
+/* =========================== 【证券详情页 - 红白简约主题 - 响应式】 =========================== */
 :root{
   --bg:#f5f6f8; --card:#ffffff; --border:#e5e7eb;
   --fg:#1f2329; --muted:#6b7280; --dim:#9ca3af;
@@ -16,33 +16,133 @@ body {
     background: var(--bg);
     color: var(--fg);
     padding: 20px;
+    min-height: 100vh;
 }
 
+/* ============ 主容器：响应式 Flex 布局 ============ */
 .detail-container {
-    position: relative;
-    width: 1300px;
-    height: 650px;
+    display: flex;
+    gap: 14px;
+    max-width: 1300px;
+    width: 95%;
+    min-height: 640px;
     margin: 0 auto;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(31,35,41,.06);
-    padding: 10px;
+    padding: 14px;
+    transition: width .3s ease, padding .3s ease;
 }
 
-/* 信息面板 (右上角) */
+/* ============ 左侧：图表主区域 ============ */
+.detail-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ============ K线类型与指标组合区域 ============ */
+.kline-indicator-bar {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    gap: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.kline-type-selector,
+.indicator-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    flex-wrap: wrap;
+}
+
+.kline-type-selector .label,
+.indicator-selector .label {
+    font-weight: bold;
+    color: var(--fg);
+    white-space: nowrap;
+}
+
+.kline-type-selector label,
+.indicator-selector label {
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--muted);
+}
+
+.kline-type-selector input[type=radio],
+.indicator-selector input[type=radio] {
+    accent-color: var(--red);
+    margin: 0;
+}
+
+/* ============ 图表区 ============ */
+.chart-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+}
+
+/* ============ 画布通用样式 ============ */
+canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+}
+
+#canvas-kline {
+    aspect-ratio: 970 / 300;
+    flex-shrink: 0;
+}
+
+#canvas-indicator {
+    aspect-ratio: 970 / 120;
+    flex-shrink: 0;
+}
+
+#canvas-second-timeline {
+    aspect-ratio: 970 / 40;
+    flex-shrink: 0;
+}
+
+#canvas-timeline {
+    aspect-ratio: 970 / 50;
+    flex-shrink: 0;
+}
+
+/* ============ 右侧：信息面板与操作按钮 ============ */
+.detail-sidebar {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 信息面板 */
 .info-panel {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    width: 240px;
-    height: 380px;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px;
     background: #fafbfc;
     overflow-y: auto;
-    z-index: 30;
+    min-height: 0;
+    flex: 1;
 }
 
 .info-panel h3 {
@@ -61,180 +161,110 @@ body {
     color: var(--fg);
 }
 
-/* 基本面信息按钮 */
-.btn-fundamental {
-    position: absolute;
-    top: 430px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: var(--red);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: background .15s;
-    z-index: 30;
-}
-
-.btn-fundamental:hover {
-    background: var(--red-d);
-}
-
-/* AI分析按钮 */
-.btn-ai {
-    position: absolute;
-    top: 465px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: var(--red);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: background .15s;
-    z-index: 30;
-}
-
-.btn-ai:hover {
-    background: var(--red-d);
-}
-
-/* 工具箱按钮 */
-.btn-toolbox {
-    position: absolute;
-    top: 500px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: var(--red);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: background .15s;
-    z-index: 30;
-}
-
-.btn-toolbox:hover {
-    background: var(--red-d);
-}
-
-/* 导出历史数据按钮 */
-.btn-export {
-    position: absolute;
-    top: 535px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: var(--red);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: background .15s;
-    z-index: 30;
-}
-
-.btn-export:hover {
-    background: var(--red-d);
-}
-
-/* 关闭按钮 */
-.btn-close {
-    position: absolute;
-    top: 570px;
-    right: 30px;
-    width: 240px;
-    height: 30px;
-    background: #6b7280;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: background .15s;
-    z-index: 30;
-}
-
-.btn-close:hover {
-    background: #4b5563;
-}
-
-/* K线类型与指标组合区域 */
-.kline-indicator-bar {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    width: 970px;
-    height: 45px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fafbfc;
+/* 侧边栏按钮组 */
+.sidebar-buttons {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-    z-index: 30;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
-.kline-type-selector,
-.indicator-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
-}
-
-.kline-type-selector .label,
-.indicator-selector .label {
-    font-weight: bold;
-    margin-right: 4px;
-    color: var(--fg);
-}
-
-.kline-type-selector label,
-.indicator-selector label {
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--muted);
-}
-
-/* 画布通用样式 */
-canvas {
-    position: absolute;
-    border: 1px solid var(--border);
+.sidebar-buttons button {
+    width: 100%;
+    height: 32px;
+    border: none;
     border-radius: 6px;
-    background: #fff;
-    z-index: 10;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    color: #fff;
+    transition: background .15s;
 }
 
-#canvas-kline {
-    top: 80px;
-    left: 30px;
+.btn-fundamental { background: var(--red); }
+.btn-fundamental:hover { background: var(--red-d); }
+
+.btn-ai { background: var(--red); }
+.btn-ai:hover { background: var(--red-d); }
+
+.btn-toolbox { background: var(--red); }
+.btn-toolbox:hover { background: var(--red-d); }
+
+.btn-export { background: var(--red); }
+.btn-export:hover { background: var(--red-d); }
+
+.btn-close { background: #6b7280; }
+.btn-close:hover { background: #4b5563; }
+
+/* ============ 响应式 - 平板 (768px ~ 1024px) ============ */
+@media (max-width: 1024px) {
+    body { padding: 12px; }
+    .detail-container {
+        width: 100%;
+        padding: 10px;
+        gap: 10px;
+    }
+    .detail-sidebar {
+        flex: 0 0 200px;
+    }
+    .kline-indicator-bar {
+        padding: 5px 10px;
+    }
+    .kline-type-selector,
+    .indicator-selector {
+        gap: 6px;
+        font-size: 11px;
+    }
 }
 
-#canvas-indicator {
-    top: 385px;
-    left: 30px;
-}
-
-#canvas-second-timeline {
-    top: 510px;
-    left: 30px;
-}
-
-#canvas-timeline {
-    top: 560px;
-    left: 30px;
+/* ============ 响应式 - 手机 (<768px) ============ */
+@media (max-width: 767px) {
+    body { padding: 8px; }
+    .detail-container {
+        flex-direction: column;
+        width: 100%;
+        padding: 8px;
+        gap: 8px;
+        min-height: auto;
+    }
+    .detail-sidebar {
+        flex: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .info-panel {
+        flex: 1;
+        min-width: 200px;
+    }
+    .info-panel h3 { font-size: 14px; }
+    .info-panel p { font-size: 12px; }
+    .sidebar-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .sidebar-buttons button {
+        width: auto;
+        flex: 1;
+        min-width: 80px;
+        height: 28px;
+        font-size: 11px;
+    }
+    .kline-indicator-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 5px 8px;
+    }
+    .kline-type-selector,
+    .indicator-selector {
+        gap: 4px;
+        font-size: 10px;
+    }
+    .kline-type-selector label,
+    .indicator-selector label {
+        font-size: 10px;
+    }
+    #canvas-kline { aspect-ratio: 970 / 320; }
+    #canvas-indicator { aspect-ratio: 970 / 130; }
 }

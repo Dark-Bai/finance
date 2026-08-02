@@ -2027,6 +2027,10 @@ def Tool_function_send_message_to_ai__(conversation_history__):
 def index():
     return render_template('index.html')
 
+@app.route('/results')
+def results():
+    return render_template('results.html')
+
 @app.route('/api/sector_list', methods=['POST'])
 def api_sector_list():
     """获取概念、行业、地域列表"""
